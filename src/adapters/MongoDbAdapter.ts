@@ -1,61 +1,63 @@
-import { MongoClient } from "mongodb";
-import { User } from "../models/User";
+import { MongoClient } from 'mongodb';
+import { User } from '../models/User';
+import { UserRequest } from '../models/UserRequest';
 
 export class MongoDbAdapter {
-    private client: MongoClient;
-    private databaseName: string;
+  private client: MongoClient;
+  private databaseName: string;
 
-    constructor(uri: string, databaseName: string) {
-        this.client = new MongoClient(uri, {
-            serverApi: {
-                version: "1",
-                strict: true,
-                deprecationErrors: true,
-            },
-        });
-        this.databaseName = databaseName;
+  constructor(uri: string, databaseName: string) {
+    this.client = new MongoClient(uri, {
+      serverApi: {
+        version: '1',
+        strict: true,
+        deprecationErrors: true,
+      },
+    });
+    this.databaseName = databaseName;
+  }
+
+  /**
+   * Factory method to create an instance of MongoDbAdapter using environment variables.
+   */
+  public static fromEnvironment(): MongoDbAdapter {
+    const mongoDbUri = process.env.MONGO_DB_URI || '';
+    const mongoDbDatabase = process.env.MONGO_DB_DATABASE || '';
+
+    if (!mongoDbUri || !mongoDbDatabase) {
+      throw new Error('Missing required MongoDB configuration.');
     }
 
-    /**
-     * Factory method to create an instance of MongoDbAdapter using environment variables.
-     */
-    public static fromEnvironment(): MongoDbAdapter {
-        const mongoDbUri = process.env.MONGO_DB_URI || '';
-        const mongoDbDatabase = process.env.MONGO_DB_DATABASE || '';
+    return new MongoDbAdapter(mongoDbUri, mongoDbDatabase);
+  }
 
-        if (!mongoDbUri || !mongoDbDatabase) {
-            throw new Error('Missing required MongoDB configuration.');
-        }
+  public async getAllUsers(req: UserRequest): Promise<User[]> {
+    const database = this.client.db(this.databaseName);
+    const usersCollection = database.collection('users');
 
-        return new MongoDbAdapter(mongoDbUri, mongoDbDatabase);
+    const filter: Partial<UserRequest> = {};
+    if (req.username) {
+      filter.username = req.username;
+    }
+    if (req.password) {
+      filter.password = req.password;
     }
 
-    public async getAllUsers(req: any): Promise<User[]> {
-        const database = this.client.db(this.databaseName);
-        const usersCollection = database.collection("users");
+    const users = await usersCollection.find(filter).toArray();
 
-        console.log("Request Parameters", req);
+    return users.map(
+      (user) =>
+        ({
+          id: user._id.toString(),
+          username: user.username,
+          password: user.password,
+          role: user.role,
+        }) as User
+    );
+  }
 
-        const filter: any = {};
-        if (req.username) {
-            filter.username = req.username;
-        }
-        if (req.password) {
-            filter.password = req.password;
-        }
-
-        const users = await usersCollection.find(filter).toArray();
-
-        return users.map(user => ({
-            id: user._id.toString(),
-            username: user.username,
-            password: user.password,
-            token: user.token,
-        } as User));
-    }
-
-    public async dispose(): Promise<void> {
-        await this.client.close();
-        console.log("MongoDB connection closed.");
-    }
+  public async dispose(): Promise<void> {
+    await this.client.close();
+    console.log('MongoDB connection closed.');
+  }
 }

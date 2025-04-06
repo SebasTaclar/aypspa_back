@@ -1,22 +1,22 @@
-import { MongoDbAdapter } from "../adapters/MongoDbAdapter";
+import { MongoDbAdapter } from '../adapters/MongoDbAdapter';
 import { User } from '../models/User';
 
 export class UserService {
-    private dbAdapter: MongoDbAdapter;
+  private dbAdapter: MongoDbAdapter;
 
-    constructor(dbAdapter: MongoDbAdapter) {
-        if (!dbAdapter) {
-            throw new Error('A valid MongoDbAdapter instance is required.');
-        }
-
-        this.dbAdapter = dbAdapter;
+  constructor(dbAdapter: MongoDbAdapter) {
+    if (!dbAdapter) {
+      throw new Error('A valid MongoDbAdapter instance is required.');
     }
 
-    public async getAllUsers(req: any): Promise<User[]> {
-        return await this.dbAdapter.getAllUsers(req);
-    }
+    this.dbAdapter = dbAdapter;
+  }
 
-    public async dispose(): Promise<void> {
-        await this.dbAdapter.dispose();
-    }
+  public async getAllUsers(req: unknown): Promise<User[]> {
+    return await this.dbAdapter.getAllUsers(req);
+  }
+
+  public async dispose(): Promise<void> {
+    await this.dbAdapter.dispose();
+  }
 }
