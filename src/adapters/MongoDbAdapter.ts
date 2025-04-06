@@ -30,11 +30,21 @@ export class MongoDbAdapter {
         return new MongoDbAdapter(mongoDbUri, mongoDbDatabase);
     }
 
-    public async getAllUsers(): Promise<User[]> {
+    public async getAllUsers(req: any): Promise<User[]> {
         const database = this.client.db(this.databaseName);
         const usersCollection = database.collection("users");
 
-        const users = await usersCollection.find({}).toArray();
+        console.log("Request Parameters", req);
+
+        const filter: any = {};
+        if (req.username) {
+            filter.username = req.username;
+        }
+        if (req.password) {
+            filter.password = req.password;
+        }
+
+        const users = await usersCollection.find(filter).toArray();
 
         return users.map(user => ({
             id: user._id.toString(),
