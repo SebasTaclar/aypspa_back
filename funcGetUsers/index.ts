@@ -1,17 +1,30 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions"
+import { MongoDbAdapter } from "../src/adapters/MongoDbAdapter";
+import { UserService } from "../src/services/UserService";
+import * as dotenv from 'dotenv';
+dotenv.config();
 
-const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
-    context.log('HTTP trigger function processed a request.');
-    const name = (req.query.name || (req.body && req.body.name));
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+const dbAdapter = MongoDbAdapter.fromEnvironment();
+const userService = new UserService(dbAdapter);
 
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        body: responseMessage
-    };
+const funcGetUsers: AzureFunction = async function (context: Context, req: HttpRequest): Promise<void> {
+    context.log(`Http function processed request for url "${req.url}"`);
 
+    try {
+        const users = await userService.getAllUsers();
+        context.res = {
+            status: 200,
+            body: JSON.stringify(users)
+        };
+    } catch (error) {
+        context.log("Error retrieving users:", error);
+        context.res = {
+            status: 500,
+            body: JSON.stringify({ error: "Failed to retrieve users!" })
+        };
+    } finally {
+        await userService.dispose();
+    }
 };
 
-export default httpTrigger;
+export default funcGetUsers;
