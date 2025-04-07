@@ -1,38 +1,35 @@
-import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import { Logger } from "../utils/Logger";
-import { validateAuthToken } from "../helpers/authHelper";
+import { AzureFunction, Context, HttpRequest } from '@azure/functions';
+import { Logger } from '../utils/Logger';
+import { validateAuthToken } from '../helpers/authHelper';
+import '../config';
 
 export const FunctionHandler =
   (handler: AzureFunction, skipAuth: boolean = false) =>
   async (context: Context, req: HttpRequest): Promise<void> => {
     const log = new Logger(context.log);
 
-    log.logInfo(
-      `[${context.invocationId}] Request started: ${JSON.stringify(req)}`
-    );
+    log.logInfo(`[${context.invocationId}] Request started: ${JSON.stringify(req)}`);
 
     const start = process.hrtime();
     try {
       if (!skipAuth) {
-        validateAuthToken(req.headers["authorization"]);
+        validateAuthToken(req.headers['authorization']);
       }
 
       await handler(context, req, log);
-      log.logInfo("Execution finished successfully.");
+      log.logInfo('Execution finished successfully.');
     } catch (e) {
-      const isUnauthorized = e.message?.includes("Unauthorized");
+      const isUnauthorized = e.message?.includes('unauthorized');
       log.logError(
-        isUnauthorized
-          ? "Unauthorized error occurred."
-          : "Error occurred during execution.",
+        isUnauthorized ? 'Unauthorized error occurred.' : 'Error occurred during execution.',
         e
       );
       context.res = {
         status: isUnauthorized ? 401 : 500,
         body: {
           error: isUnauthorized
-            ? "Unauthorized: Missing or invalid token"
-            : "Internal Server Error",
+            ? 'Unauthorized: Missing or invalid token'
+            : 'Internal Server Error',
         },
       };
     } finally {

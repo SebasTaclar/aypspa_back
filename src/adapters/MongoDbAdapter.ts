@@ -55,9 +55,4 @@ export class MongoDbAdapter {
         }) as User
     );
   }
-
-  public async dispose(): Promise<void> {
-    await this.client.close();
-    console.log('MongoDB connection closed.');
-  }
 }

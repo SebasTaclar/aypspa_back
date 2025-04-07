@@ -15,8 +15,4 @@ export class UserService {
   public async getAllUsers(req: unknown): Promise<User[]> {
     return await this.dbAdapter.getAllUsers(req);
   }
-
-  public async dispose(): Promise<void> {
-    await this.dbAdapter.dispose();
-  }
 }
