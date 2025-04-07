@@ -1,10 +1,10 @@
-import { MongoDbAdapter } from '../adapters/MongoDbAdapter';
+import { UserMongoDbAdapter } from '../adapters/UserMongoDbAdapter';
 import { User } from '../models/User';
 
 export class UserService {
-  private dbAdapter: MongoDbAdapter;
+  private dbAdapter: UserMongoDbAdapter;
 
-  constructor(dbAdapter: MongoDbAdapter) {
+  constructor(dbAdapter: UserMongoDbAdapter) {
     if (!dbAdapter) {
       throw new Error('A valid MongoDbAdapter instance is required.');
     }
@@ -13,6 +13,6 @@ export class UserService {
   }
 
   public async getAllUsers(req: unknown): Promise<User[]> {
-    return await this.dbAdapter.getAllUsers(req);
+    return await this.dbAdapter.read(req);
   }
 }

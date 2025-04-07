@@ -1,10 +1,8 @@
 import { MongoClient } from 'mongodb';
-import { User } from '../models/User';
-import { UserRequest } from '../models/UserRequest';
 
-export class MongoDbAdapter {
-  private client: MongoClient;
-  private databaseName: string;
+export abstract class MongoDbAdapter {
+  protected client: MongoClient;
+  protected databaseName: string;
 
   constructor(uri: string, databaseName: string) {
     this.client = new MongoClient(uri, {
@@ -17,10 +15,7 @@ export class MongoDbAdapter {
     this.databaseName = databaseName;
   }
 
-  /**
-   * Factory method to create an instance of MongoDbAdapter using environment variables.
-   */
-  public static fromEnvironment(): MongoDbAdapter {
+  protected static getEnvironmentConfig(): { uri: string; databaseName: string } {
     const mongoDbUri = process.env.MONGO_DB_URI || '';
     const mongoDbDatabase = process.env.MONGO_DB_DATABASE || '';
 
@@ -28,31 +23,11 @@ export class MongoDbAdapter {
       throw new Error('Missing required MongoDB configuration.');
     }
 
-    return new MongoDbAdapter(mongoDbUri, mongoDbDatabase);
+    return { uri: mongoDbUri, databaseName: mongoDbDatabase };
   }
 
-  public async getAllUsers(req: UserRequest): Promise<User[]> {
-    const database = this.client.db(this.databaseName);
-    const usersCollection = database.collection('users');
-
-    const filter: Partial<UserRequest> = {};
-    if (req.username) {
-      filter.username = req.username;
-    }
-    if (req.password) {
-      filter.password = req.password;
-    }
-
-    const users = await usersCollection.find(filter).toArray();
-
-    return users.map(
-      (user) =>
-        ({
-          id: user._id.toString(),
-          username: user.username,
-          password: user.password,
-          role: user.role,
-        }) as User
-    );
-  }
+  abstract create(data: unknown): Promise<unknown>;
+  abstract read(filter: unknown): Promise<unknown[]>;
+  abstract update(id: string, data: unknown): Promise<unknown>;
+  abstract delete(id: string): Promise<unknown>;
 }
