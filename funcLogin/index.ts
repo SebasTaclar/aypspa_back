@@ -26,6 +26,7 @@ const funcLogin: AzureFunction = async function (
   const token = generateToken({
     id: user.id,
     role: user.role,
+    name: user.name,
     username: user.username,
   });
 

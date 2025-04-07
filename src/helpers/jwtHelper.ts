@@ -3,10 +3,16 @@ import { sign, verify } from 'jsonwebtoken';
 
 const SECRET_KEY = process.env.JWT_SECRET;
 
-export function generateToken(user: { id: string; role: string; username: string }): string {
+export function generateToken(user: {
+  id: string;
+  role: string;
+  name: string;
+  username: string;
+}): string {
   const payload = {
     id: user.id,
     username: user.username,
+    name: user.name,
     role: user.role,
   };
 

@@ -28,6 +28,7 @@ export class ClientMongoDbAdapter extends MongoDbAdapter {
       id: user._id.toString(),
       username: user.username || '',
       password: user.password || '',
+      name: user.name || '',
       role: user.role || '',
       token: user.token || '',
     }));
