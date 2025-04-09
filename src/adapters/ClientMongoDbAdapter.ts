@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { MongoDbAdapter } from './MongoDbAdapter';
-import { User } from '../models/User'; // Replace with the appropriate Client model if available
+import { Client } from '../models/Client';
 
 export class ClientMongoDbAdapter extends MongoDbAdapter {
   private collection: string = 'clients';
@@ -14,27 +14,32 @@ export class ClientMongoDbAdapter extends MongoDbAdapter {
     return new ClientMongoDbAdapter(uri, databaseName);
   }
 
-  public async create(data: User): Promise<User> {
+  public async create(data: Client): Promise<Client> {
     const database = this.client.db(this.databaseName);
     const result = await database.collection(this.collection).insertOne(data);
     return { ...data, id: result.insertedId.toString() };
   }
 
-  public async read(filter: unknown): Promise<User[]> {
+  public async read(req: { search?: Record<string, unknown> }): Promise<Client[]> {
+    const filter = req.search;
+    console.log('Filter:', filter);
     const database = this.client.db(this.databaseName);
-    const users = await database.collection(this.collection).find(filter).toArray();
-    return users.map((user) => ({
-      ...user,
-      id: user._id.toString(),
-      username: user.username || '',
-      password: user.password || '',
-      name: user.name || '',
-      role: user.role || '',
-      token: user.token || '',
+    const clients = await database.collection(this.collection).find(filter).toArray();
+    return clients.map((client) => ({
+      id: client._id.toString(),
+      name: client.name || '',
+      companyName: client.companyName || '',
+      companyDocument: client.companyDocument || '',
+      rut: client.rut || '',
+      phoneNumber: client.phoneNumber || '',
+      address: client.address || '',
+      creationDate: client.creationDate || null,
+      frequentClient: client.frequentClient || '',
+      created: client.created || null,
     }));
   }
 
-  public async update(id: string, data: Partial<User>): Promise<User | null> {
+  public async update(id: string, data: Partial<Client>): Promise<Client | null> {
     const database = this.client.db(this.databaseName);
     const result = await database
       .collection(this.collection)
@@ -48,12 +53,12 @@ export class ClientMongoDbAdapter extends MongoDbAdapter {
     return result.deletedCount === 1;
   }
 
-  public async getUserById(id: string): Promise<User | null> {
-    const users = await this.read({ _id: new ObjectId(id) });
-    return users.length > 0 ? users[0] : null;
-  }
+  // public async getClientById(id: string): Promise<Client | null> {
+  //   const clients = await this.read({ _id: new ObjectId(id) });
+  //   return clients.length > 0 ? clients[0] : null;
+  // }
 
-  public async getAllUsers(): Promise<User[]> {
+  public async getAllClients(): Promise<Client[]> {
     return this.read({});
   }
 }
