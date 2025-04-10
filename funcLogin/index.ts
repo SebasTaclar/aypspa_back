@@ -1,8 +1,9 @@
 import { AzureFunction, HttpRequest } from '@azure/functions';
 import { Context } from 'vm';
-import { generateToken } from '../src/helpers/jwtHelper';
-import { FunctionHandler } from '../src/services/Main';
+import { generateToken } from '../src/shared/jwtHelper';
+import { FunctionHandler } from '../src/application/services/Main';
 import { UserFactory } from '../src/factories/UserFactory';
+import { UserService } from '../src/application/services/UserService';
 
 const funcLogin: AzureFunction = async function (
   context: Context,
@@ -11,7 +12,7 @@ const funcLogin: AzureFunction = async function (
 ): Promise<void> {
   log.logInfo(`Http function processed request for url "${req.url}"`);
 
-  const userService = await UserFactory(log);
+  const userService: UserService = await UserFactory(log);
   const users = await userService.getAllUsers(req.query);
   const user = users.length > 0 ? users[0] : null;
 

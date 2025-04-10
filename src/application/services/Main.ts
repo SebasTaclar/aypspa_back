@@ -1,7 +1,7 @@
 import { AzureFunction, Context, HttpRequest } from '@azure/functions';
-import { Logger } from '../utils/Logger';
-import { validateAuthToken } from '../helpers/authHelper';
-import '../config';
+import { Logger } from '../../shared/Logger';
+import { validateAuthToken } from '../../shared/authHelper';
+import { isDebug } from '../../config/config';
 
 export const FunctionHandler =
   (handler: AzureFunction, skipAuth: boolean = false) =>
@@ -37,9 +37,9 @@ export const FunctionHandler =
       const timeSpanMilliseconds = (end[0] * 1e9 + end[1]) / 1e6;
 
       log.logInfo(
-        `Execution finished. Result: ${JSON.stringify(
-          context.res
-        )}. Time: ${timeSpanMilliseconds} ms`
+        isDebug
+          ? `Execution finished. Time: ${timeSpanMilliseconds} ms`
+          : `Execution finished. Result: ${JSON.stringify(context.res)}. Time: ${timeSpanMilliseconds} ms`
       );
     }
   };

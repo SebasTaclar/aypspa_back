@@ -1,4 +1,4 @@
-import '../config';
+import '../config/config';
 import { sign, verify } from 'jsonwebtoken';
 
 const SECRET_KEY = process.env.JWT_SECRET;

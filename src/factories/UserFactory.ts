@@ -1,8 +1,9 @@
-import { UserMongoDbAdapter } from '../adapters/UserMongoDbAdapter';
-import { UserService } from '../services/UserService';
+import { UserMongoDbAdapter } from '../infrastructure/DbAdapters/UserMongoDbAdapter';
+import { UserService } from '../application/services/UserService';
+import { env_config } from '../config/config';
 
 export async function UserFactory(log: LogModel): Promise<UserService> {
   log.logInfo('Creating UserService instance...');
-  const dbAdapter: UserMongoDbAdapter = UserMongoDbAdapter.fromEnvironment();
-  return new UserService(dbAdapter);
+  const userRepository = new UserMongoDbAdapter(env_config.mongoDbDatabase);
+  return new UserService(userRepository);
 }
