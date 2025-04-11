@@ -25,7 +25,7 @@ export class ClientService {
     return this.clientRepository.create(ClientDto.toEntity(client));
   }
 
-  public async updateClient(id: string, data: Partial<Client>): Promise<Client | null> {
+  public async updateClient(id: string, data: Client): Promise<string | null> {
     return this.clientRepository.update(id, data);
   }
 

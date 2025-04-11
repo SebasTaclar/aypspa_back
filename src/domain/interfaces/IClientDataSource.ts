@@ -4,6 +4,6 @@ export interface IClientDataSource {
   getAll(query?: unknown): Promise<Client[]>;
   getById(id: string): Promise<Client | null>;
   create(client: Client): Promise<Client>;
-  update(id: string, client: Partial<Client>): Promise<Client | null>;
+  update(id: string, client: Client): Promise<string | null>;
   delete(id: string): Promise<boolean>;
 }

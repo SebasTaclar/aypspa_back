@@ -75,14 +75,15 @@ export class ClientMongoDbAdapter implements IClientDataSource {
     return response;
   }
 
-  public async update(id: string, data: Partial<Client>): Promise<Client | null> {
+  public async update(id: string, data: Client): Promise<string | null> {
     const response = this.withCollection(async (collection) => {
       const result = await collection.findOneAndUpdate(
         { _id: new ObjectId(id) },
         { $set: data },
         { returnDocument: 'after' }
       );
-      return result.value ? { ...result.value, id: result.value._id.toString() } : null;
+      console.log('result', result);
+      return result ? result._id.toString() : null;
     });
 
     return response;
