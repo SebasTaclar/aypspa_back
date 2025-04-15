@@ -10,4 +10,8 @@ export const env_config = {
   jwtExpiration: parseInt(process.env.JWT_EXPIRATION || '3600', 10),
   debug: process.env.DEBUG === 'true',
   nodeEnv: process.env.NODE_ENV || 'production',
+  awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+  awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+  awsRegion: process.env.AWS_REGION || '',
+  awsBucketName: process.env.AWS_BUCKET_NAME || '',
 };
