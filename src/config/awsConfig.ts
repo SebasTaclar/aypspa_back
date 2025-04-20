@@ -8,7 +8,7 @@ const s3 = new AWS.S3({
   signatureVersion: 'v4',
 });
 
-export const generatePresignedUrl = async ({
+export const generatePresignedSaveUrl = async ({
   body,
 }: {
   body: { fileName: string; fileType: string };
@@ -27,5 +27,20 @@ export const generatePresignedUrl = async ({
   } catch (error) {
     console.error('Error generating pre-signed URL:', error);
     throw new Error('Failed to generate pre-signed URL');
+  }
+};
+
+export const generatePresignedGetUrl = async (fileName: string): Promise<string> => {
+  const params = {
+    Bucket: env_config.awsBucketName,
+    Key: fileName,
+    Expires: 60,
+  };
+
+  try {
+    return await s3.getSignedUrlPromise('getObject', params);
+  } catch (error) {
+    console.error('Error generating pre-signed GET URL:', error);
+    throw new Error('Failed to generate pre-signed GET URL');
   }
 };

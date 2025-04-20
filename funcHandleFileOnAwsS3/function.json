@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["post"],
-      "route": "v1/saveFile"
+      "route": "v1/generatePreSignedUrlAwsS3"
     },
     {
       "type": "http",
@@ -14,5 +14,5 @@
       "name": "res"
     }
   ],
-  "scriptFile": "../dist/funcSaveFileOnAwsS3/index.js"
+  "scriptFile": "../dist/funcHandleFileOnAwsS3/index.js"
 }
