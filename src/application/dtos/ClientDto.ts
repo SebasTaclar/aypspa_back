@@ -1,6 +1,7 @@
 import { Client } from '../../domain/entities/Client';
 
 export class ClientDto {
+  id: string;
   name: string;
   companyName: string;
   companyDocument: string;
@@ -13,7 +14,7 @@ export class ClientDto {
 
   public static toEntity(clientDto: ClientDto): Client {
     return {
-      id: '',
+      id: clientDto.id,
       name: clientDto.name,
       companyName: clientDto.companyName,
       companyDocument: clientDto.companyDocument,

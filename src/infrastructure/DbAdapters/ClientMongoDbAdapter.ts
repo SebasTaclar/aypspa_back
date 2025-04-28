@@ -1,4 +1,4 @@
-import { Collection, ObjectId } from 'mongodb';
+import { Collection } from 'mongodb';
 import { connectMongoClient, mongoClient } from '../../config/MongoClient';
 import { IClientDataSource } from '../../domain/interfaces/IClientDataSource';
 import { Client } from '../../domain/entities/Client';
@@ -28,7 +28,7 @@ export class ClientMongoDbAdapter implements IClientDataSource {
       return clients.map(
         (client) =>
           ({
-            id: client._id.toString(),
+            id: client.id.toString(),
             name: client.name || '',
             companyName: client.companyName || '',
             companyDocument: client.companyDocument || '',
@@ -47,10 +47,10 @@ export class ClientMongoDbAdapter implements IClientDataSource {
 
   public async getById(id: string): Promise<Client | null> {
     const response = this.withCollection(async (collection) => {
-      const client = await collection.findOne({ _id: new ObjectId(id) });
+      const client = await collection.findOne({ id });
       if (!client) return null;
       return {
-        id: client._id.toString(),
+        id: client.id.toString(),
         name: client.name || '',
         companyName: client.companyName || '',
         companyDocument: client.companyDocument || '',
@@ -78,12 +78,12 @@ export class ClientMongoDbAdapter implements IClientDataSource {
   public async update(id: string, data: Client): Promise<string | null> {
     const response = this.withCollection(async (collection) => {
       const result = await collection.findOneAndUpdate(
-        { _id: new ObjectId(id) },
+        { id },
         { $set: data },
         { returnDocument: 'after' }
       );
       console.log('result', result);
-      return result ? result._id.toString() : null;
+      return result ? result.id.toString() : null;
     });
 
     return response;
@@ -91,7 +91,7 @@ export class ClientMongoDbAdapter implements IClientDataSource {
 
   public async delete(id: string): Promise<boolean> {
     const response = this.withCollection(async (collection) => {
-      const result = await collection.deleteOne({ _id: new ObjectId(id) });
+      const result = await collection.deleteOne({ id });
       return result.deletedCount === 1;
     });
 
