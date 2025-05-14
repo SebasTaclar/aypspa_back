@@ -25,18 +25,22 @@ export class ProductMongoDbAdapter implements IProductDataSource {
   public async getAll(query?: unknown): Promise<Product[]> {
     const response = this.withCollection(async (collection) => {
       const products = await collection.find(query || {}).toArray();
+      console.log('Fetched products:', products);
       return products.map(
         (product) =>
           ({
-            id: product.id.toString(),
+            _id: product._id.toString(),
             name: product.name || '',
-            description: product.description || '',
-            price: product.price || 0,
-            stock: product.stock || 0,
-            category: product.category || '',
+            code: product.code || '',
+            brand: product.brand || '',
+            priceNet: product.priceNet || 0,
+            priceIva: product.priceIva || 0,
+            priceTotal: product.priceTotal || 0,
+            priceWarranty: product.priceWarranty || 0,
+            rented: product.rented || false,
             createdAt: product.createdAt || null,
             updatedAt: product.updatedAt || null,
-          }) as unknown as Product
+          }) as Product
       );
     });
 
@@ -50,15 +54,18 @@ export class ProductMongoDbAdapter implements IProductDataSource {
         return null;
       }
       return {
-        id: product.id.toString(),
+        _id: product._id.toString(),
         name: product.name || '',
-        description: product.description || '',
-        price: product.price || 0,
-        stock: product.stock || 0,
-        category: product.category || '',
+        code: product.code || '',
+        brand: product.brand || '',
+        priceNet: product.priceNet || 0,
+        priceIva: product.priceIva || 0,
+        priceTotal: product.priceTotal || 0,
+        priceWarranty: product.priceWarranty || 0,
+        rented: product.rented || false,
         createdAt: product.createdAt || null,
         updatedAt: product.updatedAt || null,
-      } as unknown as Product;
+      } as Product;
     });
 
     return response;
@@ -67,7 +74,6 @@ export class ProductMongoDbAdapter implements IProductDataSource {
   public async create(product: Product): Promise<Product> {
     const response = await this.withCollection(async (collection) => {
       const result = await collection.insertOne({
-        id: product.id,
         name: product.name,
         code: product.code,
         brand: product.brand,

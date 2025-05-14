@@ -1,7 +1,7 @@
 import { Product } from '../../domain/entities/Product';
 
 export class ProductDto {
-  id: string;
+  _id: string;
   name: string;
   code: string;
   brand: string;
@@ -15,7 +15,7 @@ export class ProductDto {
 
   public static toEntity(productDto: ProductDto): Product {
     return {
-      id: productDto.id,
+      _id: productDto._id,
       name: productDto.name,
       code: productDto.code,
       brand: productDto.brand,
