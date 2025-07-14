@@ -4,8 +4,10 @@ dotenv.config();
 export const isDebug = process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true';
 
 export const env_config = {
+  databaseType: process.env.DATABASE_TYPE || 'prisma', // 'mongodb' or 'prisma'
   mongoDbUri: process.env.MONGO_DB_URI || '',
   mongoDbDatabase: process.env.MONGO_DB_DATABASE || '',
+  databaseUrl: process.env.DATABASE_URL || '',
   jwtSecret: process.env.JWT_SECRET || '',
   jwtExpiration: parseInt(process.env.JWT_EXPIRATION || '3600', 10),
   debug: process.env.DEBUG === 'true',
