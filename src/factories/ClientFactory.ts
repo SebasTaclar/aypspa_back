@@ -2,6 +2,7 @@ import { ClientMongoDbAdapter } from '../infrastructure/DbAdapters/ClientMongoDb
 import { ClientPrismaAdapter } from '../infrastructure/DbAdapters/ClientPrismaAdapter';
 import { ClientService } from '../application/services/ClientService';
 import { env_config } from '../config/config';
+import { LogModel } from '../domain/entities/LogModel';
 
 export async function ClientFactory(log: LogModel): Promise<ClientService> {
   log.logInfo('Creating ClientService instance...');

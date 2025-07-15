@@ -1,5 +1,6 @@
 import { Logger as AzureLogger } from '@azure/functions';
 import { inspect } from 'util';
+import { LogModel } from '../domain/entities/LogModel';
 
 export class Logger implements LogModel {
   private info: (message: string, ...optionalParams: unknown[]) => void;

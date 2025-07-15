@@ -1,6 +1,5 @@
 import { IProductDataSource } from '../../domain/interfaces/IProductDataSource';
 import { Product } from '../../domain/entities/Product';
-import { ProductDto } from '../dtos/ProductDto';
 
 export class ProductService {
   private readonly productRepository: IProductDataSource;
@@ -22,7 +21,7 @@ export class ProductService {
   }
 
   public async createProduct(product: Product): Promise<Product> {
-    return this.productRepository.create(ProductDto.toEntity(product));
+    return this.productRepository.create(product);
   }
 
   public async updateProduct(id: string, data: Product): Promise<string | null> {

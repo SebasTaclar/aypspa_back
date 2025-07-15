@@ -1,6 +1,5 @@
 import { IClientDataSource } from '../../domain/interfaces/IClientDataSource';
 import { Client } from '../../domain/entities/Client';
-import { ClientDto } from '../dtos/ClientDto';
 
 export class ClientService {
   private readonly clientRepository: IClientDataSource;
@@ -22,7 +21,7 @@ export class ClientService {
   }
 
   public async createClient(client: Client): Promise<Client> {
-    return this.clientRepository.create(ClientDto.toEntity(client));
+    return this.clientRepository.create(client);
   }
 
   public async updateClient(id: string, data: Client): Promise<string | null> {

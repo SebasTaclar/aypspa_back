@@ -1,0 +1,43 @@
+# Test Azure Functions API Endpoints
+
+### Get all products
+GET http://localhost:7071/api/v1/products
+Content-Type: application/json
+
+### Get product by ID
+GET http://localhost:7071/api/v1/products/1
+Content-Type: application/json
+
+### Create new product
+POST http://localhost:7071/api/v1/products
+Content-Type: application/json
+
+{
+  "name": "Test Product",
+  "code": "TEST001",
+  "brand": "Test Brand",
+  "priceNet": 100.00,
+  "priceIva": 19.00,
+  "priceTotal": 119.00,
+  "priceWarranty": 10.00,
+  "rented": false
+}
+
+### Update existing product
+PUT http://localhost:7071/api/v1/products/1
+Content-Type: application/json
+
+{
+  "name": "Updated Test Product",
+  "code": "TEST001-UPDATED",
+  "brand": "Updated Brand",
+  "priceNet": 150.00,
+  "priceIva": 28.50,
+  "priceTotal": 178.50,
+  "priceWarranty": 15.00,
+  "rented": true
+}
+
+### Delete product
+DELETE http://localhost:7071/api/v1/products/1
+Content-Type: application/json

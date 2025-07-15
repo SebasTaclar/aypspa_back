@@ -2,6 +2,7 @@ import { AzureFunction, Context, HttpRequest } from '@azure/functions';
 import { ClientService } from '../src/application/services/ClientService';
 import { ClientFactory } from '../src/factories/ClientFactory';
 import { FunctionHandler } from '../src/application/services/Main';
+import { LogModel } from '../src/domain/entities/LogModel';
 
 const funcUpdateClient: AzureFunction = async function (
   context: Context,

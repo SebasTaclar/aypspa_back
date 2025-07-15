@@ -2,6 +2,7 @@ import { AzureFunction, Context, HttpRequest } from '@azure/functions';
 import { FunctionHandler } from '../src/application/services/Main';
 import { ClientService } from '../src/application/services/ClientService';
 import { ClientFactory } from '../src/factories/ClientFactory';
+import { LogModel } from '../src/domain/entities/LogModel';
 
 const funcDeleteClient: AzureFunction = async function (
   context: Context,

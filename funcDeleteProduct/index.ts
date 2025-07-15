@@ -4,15 +4,21 @@ import { ProductFactory } from '../src/factories/ProductFactory';
 import { FunctionHandler } from '../src/application/services/Main';
 import { LogModel } from '../src/domain/entities/LogModel';
 
-const funcGetProducts: AzureFunction = async function (
+const funcDeleteProduct: AzureFunction = async function (
   context: Context,
   req: HttpRequest,
   log: LogModel
 ): Promise<void> {
   log.logInfo(`Http function processed request for url "${req.url}"`);
-  const ProductService: ProductService = await ProductFactory(log);
-  const products = await ProductService.getAllProducts(req.query);
-  context.res = { status: 200, body: JSON.stringify(products) };
+  const productService: ProductService = await ProductFactory(log);
+  const result = await productService.deleteProduct(req.params.id);
+  context.res = {
+    status: result ? 200 : 404,
+    body: JSON.stringify({
+      success: result,
+      message: result ? 'Product deleted' : 'Product not found',
+    }),
+  };
 };
 
-export = FunctionHandler(funcGetProducts);
+export = FunctionHandler(funcDeleteProduct);

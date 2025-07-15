@@ -1,7 +1,8 @@
 import { AzureFunction, Context, HttpRequest } from '@azure/functions';
-import { FunctionHandler } from '../src/application/services/Main';
 import { UserFactory } from '../src/factories/UserFactory';
 import { UserService } from '../src/application/services/UserService';
+import { FunctionHandler } from '../src/application/services/Main';
+import { LogModel } from '../src/domain/entities/LogModel';
 
 const funcGetUsers: AzureFunction = async (
   context: Context,

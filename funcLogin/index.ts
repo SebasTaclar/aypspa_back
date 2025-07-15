@@ -4,6 +4,7 @@ import { generateToken } from '../src/shared/jwtHelper';
 import { FunctionHandler } from '../src/application/services/Main';
 import { UserFactory } from '../src/factories/UserFactory';
 import { UserService } from '../src/application/services/UserService';
+import { LogModel } from '../src/domain/entities/LogModel';
 
 const funcLogin: AzureFunction = async function (
   context: Context,
