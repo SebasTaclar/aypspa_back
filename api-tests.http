@@ -41,3 +41,58 @@ Content-Type: application/json
 ### Delete product
 DELETE http://localhost:7071/api/v1/products/1
 Content-Type: application/json
+
+### ========== RENT API ENDPOINTS ==========
+
+### Get all rents
+GET http://localhost:7071/api/funcGetRents
+Content-Type: application/json
+
+### Get active rents only
+GET http://localhost:7071/api/funcGetRents?type=active
+Content-Type: application/json
+
+### Get finished rents only
+GET http://localhost:7071/api/funcGetRents?type=finished
+Content-Type: application/json
+
+### Get rents with search query
+GET http://localhost:7071/api/funcGetRents?type=active&clientName=Darwin
+Content-Type: application/json
+
+### Create new rent
+POST http://localhost:7071/api/funcCreateRent
+Content-Type: application/json
+
+{
+  "code": "TEST001",
+  "productName": "Test Generator",
+  "quantity": 1,
+  "totalValuePerDay": 15000,
+  "clientRut": "12345678-9",
+  "paymentMethod": "debito",
+  "clientName": "Test Client Name",
+  "warrantyValue": 500000
+}
+
+### Update existing rent
+PUT http://localhost:7071/api/funcUpdateRent?id=8241
+Content-Type: application/json
+
+{
+  "productName": "Updated Generator",
+  "totalValuePerDay": 18000,
+  "paymentMethod": "credito"
+}
+
+### Finish a rent
+PATCH http://localhost:7071/api/funcFinishRent?id=8241
+Content-Type: application/json
+
+{
+  "deliveryDate": "2025-07-20T10:00:00"
+}
+
+### Delete rent
+DELETE http://localhost:7071/api/funcDeleteRent?id=8241
+Content-Type: application/json

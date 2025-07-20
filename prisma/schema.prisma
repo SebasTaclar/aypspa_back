@@ -55,3 +55,22 @@ model Product {
 
   @@map("products")
 }
+
+model Rent {
+  id               Int      @id @default(autoincrement())
+  code             String   @unique
+  productName      String   @map("product_name")
+  quantity         Int      @default(1)
+  totalValuePerDay Decimal  @default(0) @map("total_value_per_day") @db.Decimal(10, 2)
+  clientRut        String   @map("client_rut")
+  deliveryDate     String?  @map("delivery_date")
+  paymentMethod    String   @map("payment_method")
+  clientName       String   @map("client_name")
+  warrantyValue    Decimal  @default(0) @map("warranty_value") @db.Decimal(10, 2)
+  creationDate     String   @map("creation_date")
+  isFinished       Boolean  @default(false) @map("is_finished")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("rents")
+}
