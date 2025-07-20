@@ -98,16 +98,25 @@ const funcCreateRent: AzureFunction = async function (
     log.logError(`Error in funcCreateRent: ${error.message}`);
     log.logError(`Stack trace: ${error.stack}`);
 
+    // Handle specific error cases
+    let statusCode = 500;
+    let errorMessage = 'Failed to create rent';
+
+    if (error.message.includes('already exists')) {
+      statusCode = 409; // Conflict
+      errorMessage = error.message;
+    }
+
     context.res = {
-      status: 500,
+      status: statusCode,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
       },
       body: JSON.stringify({
         success: false,
-        error: 'Internal server error',
-        message: 'Failed to create rent',
+        error: statusCode === 409 ? 'Conflict' : 'Internal server error',
+        message: errorMessage,
       }),
     };
   }

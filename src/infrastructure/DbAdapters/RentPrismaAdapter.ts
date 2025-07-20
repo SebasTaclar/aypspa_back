@@ -152,8 +152,16 @@ export class RentPrismaAdapter implements IRentDataSource {
       });
 
       return this.mapToRentEntity(createdRent);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating rent:', error);
+
+      // Handle unique constraint violation for code field
+      if (error.code === 'P2002' && error.meta?.target?.includes('code')) {
+        throw new Error(
+          `A rent with code '${rent.code}' already exists. Please use a different code.`
+        );
+      }
+
       throw new Error('Failed to create rent');
     }
   }
