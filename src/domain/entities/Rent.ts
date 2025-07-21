@@ -9,6 +9,6 @@ export type Rent = {
   paymentMethod: string;
   clientName: string;
   warrantyValue: number;
-  creationDate: string;
   isFinished: boolean;
+  createdAt: string;
 };

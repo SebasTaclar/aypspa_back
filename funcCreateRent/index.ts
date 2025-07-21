@@ -71,8 +71,8 @@ const funcCreateRent: AzureFunction = async function (
       paymentMethod: req.body.paymentMethod,
       clientName: req.body.clientName,
       warrantyValue: parseFloat(req.body.warrantyValue),
-      creationDate: req.body.creationDate || new Date().toISOString(),
       isFinished: req.body.isFinished || false,
+      createdAt: new Date().toISOString(),
     };
 
     log.logInfo(`Creating rent with code: ${rentData.code}`);

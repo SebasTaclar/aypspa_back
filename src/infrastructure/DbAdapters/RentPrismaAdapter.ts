@@ -33,12 +33,12 @@ export class RentPrismaAdapter implements IRentDataSource {
         ...(typeof queryObj.paymentMethod === 'string' && {
           paymentMethod: queryObj.paymentMethod,
         }),
-        // Date range filtering
+        // Date range filtering using createdAt instead of creationDate
         ...(typeof queryObj.startDate === 'string' && {
-          creationDate: { gte: queryObj.startDate },
+          createdAt: { gte: new Date(queryObj.startDate) },
         }),
         ...(typeof queryObj.endDate === 'string' && {
-          creationDate: { lte: queryObj.endDate },
+          createdAt: { lte: new Date(queryObj.endDate) },
         }),
       };
     }
@@ -146,7 +146,6 @@ export class RentPrismaAdapter implements IRentDataSource {
           paymentMethod: rent.paymentMethod,
           clientName: rent.clientName,
           warrantyValue: rent.warrantyValue,
-          creationDate: rent.creationDate || new Date().toISOString(),
           isFinished: rent.isFinished || false,
         },
       });
@@ -154,19 +153,6 @@ export class RentPrismaAdapter implements IRentDataSource {
       return this.mapToRentEntity(createdRent);
     } catch (error: unknown) {
       console.error('Error creating rent:', error);
-
-      // Handle unique constraint violation for code field
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002' &&
-        Array.isArray(error.meta?.target) &&
-        error.meta.target.includes('code')
-      ) {
-        throw new Error(
-          `A rent with code '${rent.code}' already exists. Please use a different code.`
-        );
-      }
-
       throw new Error('Failed to create rent');
     }
   }
@@ -190,7 +176,6 @@ export class RentPrismaAdapter implements IRentDataSource {
           paymentMethod: data.paymentMethod,
           clientName: data.clientName,
           warrantyValue: data.warrantyValue,
-          creationDate: data.creationDate,
           isFinished: data.isFinished,
         },
       });
@@ -254,8 +239,8 @@ export class RentPrismaAdapter implements IRentDataSource {
       paymentMethod: rent.paymentMethod,
       clientName: rent.clientName,
       warrantyValue: Number(rent.warrantyValue),
-      creationDate: rent.creationDate,
       isFinished: rent.isFinished,
+      createdAt: rent.createdAt.toISOString(),
     };
   }
 }

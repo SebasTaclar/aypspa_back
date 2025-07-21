@@ -62,13 +62,13 @@ export class RentService {
       throw new Error('Valid rent data is required.');
     }
 
-    // Set creation date and default values
+    // Set default values
     const newRent: Rent = {
       ...rent,
       id: rent.id || this.generateRentId(),
-      creationDate: rent.creationDate || new Date().toISOString(),
       deliveryDate: rent.deliveryDate || '',
       isFinished: false,
+      createdAt: rent.createdAt || new Date().toISOString(),
     };
 
     return this.rentRepository.create(newRent);

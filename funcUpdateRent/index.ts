@@ -86,8 +86,8 @@ const funcUpdateRent: AzureFunction = async function (
         req.body.warrantyValue !== undefined
           ? parseFloat(req.body.warrantyValue)
           : existingRent.warrantyValue,
-      creationDate: existingRent.creationDate,
       isFinished: req.body.isFinished !== undefined ? req.body.isFinished : existingRent.isFinished,
+      createdAt: existingRent.createdAt,
     };
 
     log.logInfo(`Updating rent with ID: ${rentId}`);

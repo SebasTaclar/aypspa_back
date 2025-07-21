@@ -60,7 +60,6 @@ export class RentMongoDbAdapter implements IRentDataSource {
     return this.withCollection(async (collection) => {
       const rentDocument = {
         ...rent,
-        creationDate: rent.creationDate || new Date().toISOString(),
         deliveryDate: rent.deliveryDate || '',
         isFinished: rent.isFinished || false,
       };
@@ -113,8 +112,10 @@ export class RentMongoDbAdapter implements IRentDataSource {
       paymentMethod: (document.paymentMethod as string) || '',
       clientName: (document.clientName as string) || '',
       warrantyValue: (document.warrantyValue as number) || 0,
-      creationDate: (document.creationDate as string) || '',
       isFinished: (document.isFinished as boolean) || false,
+      createdAt: document.createdAt
+        ? new Date(document.createdAt as string).toISOString()
+        : new Date().toISOString(),
     };
   }
 }
