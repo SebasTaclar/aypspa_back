@@ -80,9 +80,15 @@ export class ClientPrismaAdapter implements IClientDataSource {
         rut: client.rut || null,
         phoneNumber: client.phoneNumber || null,
         address: client.address || null,
-        creationDate: client.creationDate || null,
+        creationDate:
+          client.creationDate && client.creationDate.trim() !== ''
+            ? client.creationDate
+            : new Date().toISOString(),
         frequentClient: client.frequentClient || null,
-        created: client.created || null,
+        created:
+          client.created && client.created.trim() !== ''
+            ? client.created
+            : new Date().toISOString(),
         photoFileName: client.photoFileName || null,
       },
     });
@@ -113,9 +119,15 @@ export class ClientPrismaAdapter implements IClientDataSource {
           rut: client.rut || null,
           phoneNumber: client.phoneNumber || null,
           address: client.address || null,
-          creationDate: client.creationDate || null,
+          creationDate:
+            client.creationDate && client.creationDate.trim() !== ''
+              ? client.creationDate
+              : new Date().toISOString(),
           frequentClient: client.frequentClient || null,
-          created: client.created || null,
+          created:
+            client.created && client.created.trim() !== ''
+              ? client.created
+              : new Date().toISOString(),
           photoFileName: client.photoFileName || null,
         },
         select: { id: true },
