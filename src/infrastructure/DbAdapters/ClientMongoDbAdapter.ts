@@ -38,6 +38,7 @@ export class ClientMongoDbAdapter implements IClientDataSource {
             creationDate: client.creationDate || null,
             frequentClient: client.frequentClient || '',
             created: client.created || null,
+            photoFileName: client.photoFileName || undefined,
           }) as Client
       );
     });
@@ -60,6 +61,7 @@ export class ClientMongoDbAdapter implements IClientDataSource {
         creationDate: client.creationDate || null,
         frequentClient: client.frequentClient || '',
         created: client.created || null,
+        photoFileName: client.photoFileName || undefined,
       } as Client;
     });
 

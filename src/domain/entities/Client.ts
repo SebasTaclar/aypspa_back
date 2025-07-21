@@ -9,4 +9,5 @@ export type Client = {
   creationDate: string;
   frequentClient: string;
   created: string;
+  photoFileName?: string;
 };

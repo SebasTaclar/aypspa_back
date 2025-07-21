@@ -45,6 +45,7 @@ export class ClientPrismaAdapter implements IClientDataSource {
       creationDate: client.creationDate || '',
       frequentClient: client.frequentClient || '',
       created: client.created || '',
+      photoFileName: client.photoFileName || undefined,
     }));
   }
 
@@ -66,6 +67,7 @@ export class ClientPrismaAdapter implements IClientDataSource {
       creationDate: client.creationDate || '',
       frequentClient: client.frequentClient || '',
       created: client.created || '',
+      photoFileName: client.photoFileName || undefined,
     };
   }
 
@@ -81,6 +83,7 @@ export class ClientPrismaAdapter implements IClientDataSource {
         creationDate: client.creationDate || null,
         frequentClient: client.frequentClient || null,
         created: client.created || null,
+        photoFileName: client.photoFileName || null,
       },
     });
 
@@ -95,6 +98,7 @@ export class ClientPrismaAdapter implements IClientDataSource {
       creationDate: createdClient.creationDate || '',
       frequentClient: createdClient.frequentClient || '',
       created: createdClient.created || '',
+      photoFileName: createdClient.photoFileName || undefined,
     };
   }
 
@@ -112,6 +116,7 @@ export class ClientPrismaAdapter implements IClientDataSource {
           creationDate: client.creationDate || null,
           frequentClient: client.frequentClient || null,
           created: client.created || null,
+          photoFileName: client.photoFileName || null,
         },
         select: { id: true },
       });
@@ -158,6 +163,7 @@ export class ClientPrismaAdapter implements IClientDataSource {
       creationDate: client.creationDate || '',
       frequentClient: client.frequentClient || '',
       created: client.created || '',
+      photoFileName: client.photoFileName || undefined,
     };
   }
 
@@ -180,6 +186,7 @@ export class ClientPrismaAdapter implements IClientDataSource {
       creationDate: client.creationDate || '',
       frequentClient: client.frequentClient || '',
       created: client.created || '',
+      photoFileName: client.photoFileName || undefined,
     }));
   }
 
@@ -205,6 +212,7 @@ export class ClientPrismaAdapter implements IClientDataSource {
       creationDate: client.creationDate || '',
       frequentClient: client.frequentClient || '',
       created: client.created || '',
+      photoFileName: client.photoFileName || undefined,
     }));
   }
 
