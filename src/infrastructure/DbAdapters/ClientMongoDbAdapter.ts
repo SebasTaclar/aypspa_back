@@ -70,8 +70,15 @@ export class ClientMongoDbAdapter implements IClientDataSource {
 
   public async create(data: Client): Promise<Client> {
     const response = this.withCollection(async (collection) => {
-      await collection.insertOne(data);
-      return { ...data };
+      // Generate a new ID if not provided or if it's empty
+      const clientToInsert = {
+        ...data,
+        id:
+          data.id && data.id.trim() !== '' ? data.id : Math.floor(Math.random() * 10000).toString(),
+      };
+
+      await collection.insertOne(clientToInsert);
+      return clientToInsert;
     });
 
     return response;

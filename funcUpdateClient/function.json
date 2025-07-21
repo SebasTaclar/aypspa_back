@@ -6,7 +6,7 @@
       "direction": "in",
       "name": "req",
       "methods": ["put"],
-      "route": "v1/clients"
+      "route": "v1/clients/{id}"
     },
     {
       "type": "http",

@@ -110,8 +110,15 @@ export class ClientPrismaAdapter implements IClientDataSource {
 
   public async update(id: string, client: Client): Promise<string | null> {
     try {
+      // Validate and parse the ID
+      const clientId = parseInt(id, 10);
+      if (isNaN(clientId)) {
+        console.error(`Invalid client ID: ${id}`);
+        return null;
+      }
+
       const updatedClient = await this.prisma.client.update({
-        where: { id: parseInt(id) },
+        where: { id: clientId },
         data: {
           name: client.name,
           companyName: client.companyName || null,
@@ -135,6 +142,7 @@ export class ClientPrismaAdapter implements IClientDataSource {
 
       return updatedClient.id.toString();
     } catch (error) {
+      console.error('Error updating client:', error);
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
         return null; // Record not found
       }
