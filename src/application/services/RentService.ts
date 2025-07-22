@@ -68,6 +68,7 @@ export class RentService {
       id: rent.id || this.generateRentId(),
       deliveryDate: rent.deliveryDate || '',
       isFinished: false,
+      isPaid: rent.isPaid || false,
       createdAt: rent.createdAt || new Date().toISOString(),
     };
 
@@ -106,15 +107,33 @@ export class RentService {
    * Marks a rent as finished
    * @param id - The unique identifier of the rent to finish
    * @param deliveryDate - The delivery date when the rent was finished
+   * @param totalDays - Total days of the rental period
+   * @param totalPrice - Total price calculated for the rental
+   * @param observations - Additional observations about the rental completion
+   * @param isPaid - Whether the rent was paid
    * @returns Promise containing the updated rent ID or null if not found
    */
-  public async finishRent(id: string, deliveryDate?: string): Promise<string | null> {
+  public async finishRent(
+    id: string,
+    deliveryDate?: string,
+    totalDays?: number,
+    totalPrice?: number,
+    observations?: string,
+    isPaid?: boolean
+  ): Promise<string | null> {
     if (!id || typeof id !== 'string') {
       throw new Error('Valid rent ID is required.');
     }
 
     const finalDeliveryDate = deliveryDate || new Date().toISOString();
-    return this.rentRepository.finishRent(id, finalDeliveryDate);
+    return this.rentRepository.finishRent(
+      id,
+      finalDeliveryDate,
+      totalDays,
+      totalPrice,
+      observations,
+      isPaid
+    );
   }
 
   /**

@@ -55,7 +55,18 @@ export interface IRentDataSource {
    * Marks a rent as finished
    * @param id - The unique identifier of the rent to finish
    * @param deliveryDate - The delivery date when the rent was finished
+   * @param totalDays - Total days of the rental period
+   * @param totalPrice - Total price calculated for the rental
+   * @param observations - Additional observations about the rental completion
+   * @param isPaid - Whether the rent was paid
    * @returns Promise containing the updated rent ID or null if not found
    */
-  finishRent(id: string, deliveryDate: string): Promise<string | null>;
+  finishRent(
+    id: string,
+    deliveryDate: string,
+    totalDays?: number,
+    totalPrice?: number,
+    observations?: string,
+    isPaid?: boolean
+  ): Promise<string | null>;
 }

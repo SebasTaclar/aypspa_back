@@ -10,5 +10,9 @@ export type Rent = {
   clientName: string;
   warrantyValue: number;
   isFinished: boolean;
+  isPaid: boolean;
+  totalDays?: number;
+  totalPrice?: number;
+  observations?: string;
   createdAt: string;
 };

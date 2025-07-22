@@ -66,11 +66,23 @@ const funcFinishRent: AzureFunction = async function (
       return;
     }
 
-    // Get delivery date from request body or use current date
+    // Get data from request body
     const deliveryDate = (req.body && req.body.deliveryDate) || new Date().toISOString();
+    const totalDays = req.body && req.body.totalDays ? parseInt(req.body.totalDays) : undefined;
+    const totalPrice =
+      req.body && req.body.totalPrice ? parseFloat(req.body.totalPrice) : undefined;
+    const observations = req.body && req.body.observations ? req.body.observations : undefined;
+    const isPaid = req.body && req.body.isPaid !== undefined ? req.body.isPaid : undefined;
 
     log.logInfo(`Finishing rent with ID: ${rentId}`);
-    const finishedRentId = await rentService.finishRent(rentId, deliveryDate);
+    const finishedRentId = await rentService.finishRent(
+      rentId,
+      deliveryDate,
+      totalDays,
+      totalPrice,
+      observations,
+      isPaid
+    );
 
     if (!finishedRentId) {
       context.res = {

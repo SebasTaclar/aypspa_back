@@ -69,6 +69,10 @@ model Rent {
   clientName       String   @map("client_name")
   warrantyValue    Decimal  @default(0) @map("warranty_value") @db.Decimal(10, 2)
   isFinished       Boolean  @default(false) @map("is_finished")
+  isPaid           Boolean  @default(false) @map("is_paid")
+  totalDays        Int?     @map("total_days")
+  totalPrice       Decimal? @map("total_price") @db.Decimal(10, 2)
+  observations     String?  @map("observations")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

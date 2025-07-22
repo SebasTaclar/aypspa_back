@@ -147,6 +147,10 @@ export class RentPrismaAdapter implements IRentDataSource {
           clientName: rent.clientName,
           warrantyValue: rent.warrantyValue,
           isFinished: rent.isFinished || false,
+          isPaid: rent.isPaid || false,
+          totalDays: rent.totalDays || null,
+          totalPrice: rent.totalPrice || null,
+          observations: rent.observations || null,
         },
       });
 
@@ -177,6 +181,10 @@ export class RentPrismaAdapter implements IRentDataSource {
           clientName: data.clientName,
           warrantyValue: data.warrantyValue,
           isFinished: data.isFinished,
+          isPaid: data.isPaid,
+          totalDays: data.totalDays || null,
+          totalPrice: data.totalPrice || null,
+          observations: data.observations || null,
         },
       });
 
@@ -205,7 +213,14 @@ export class RentPrismaAdapter implements IRentDataSource {
     }
   }
 
-  public async finishRent(id: string, deliveryDate: string): Promise<string | null> {
+  public async finishRent(
+    id: string,
+    deliveryDate: string,
+    totalDays?: number,
+    totalPrice?: number,
+    observations?: string,
+    isPaid?: boolean
+  ): Promise<string | null> {
     try {
       const rentId = parseInt(id, 10);
       if (isNaN(rentId)) {
@@ -217,6 +232,10 @@ export class RentPrismaAdapter implements IRentDataSource {
         data: {
           isFinished: true,
           deliveryDate: deliveryDate,
+          ...(totalDays !== undefined && { totalDays }),
+          ...(totalPrice !== undefined && { totalPrice }),
+          ...(observations !== undefined && { observations }),
+          ...(isPaid !== undefined && { isPaid }),
         },
       });
 
@@ -240,6 +259,10 @@ export class RentPrismaAdapter implements IRentDataSource {
       clientName: rent.clientName,
       warrantyValue: Number(rent.warrantyValue),
       isFinished: rent.isFinished,
+      isPaid: rent.isPaid,
+      totalDays: rent.totalDays || undefined,
+      totalPrice: rent.totalPrice ? Number(rent.totalPrice) : undefined,
+      observations: rent.observations || undefined,
       createdAt: rent.createdAt.toISOString(),
     };
   }

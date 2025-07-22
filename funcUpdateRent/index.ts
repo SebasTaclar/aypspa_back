@@ -87,6 +87,15 @@ const funcUpdateRent: AzureFunction = async function (
           ? parseFloat(req.body.warrantyValue)
           : existingRent.warrantyValue,
       isFinished: req.body.isFinished !== undefined ? req.body.isFinished : existingRent.isFinished,
+      isPaid: req.body.isPaid !== undefined ? req.body.isPaid : existingRent.isPaid,
+      totalDays:
+        req.body.totalDays !== undefined ? parseInt(req.body.totalDays) : existingRent.totalDays,
+      totalPrice:
+        req.body.totalPrice !== undefined
+          ? parseFloat(req.body.totalPrice)
+          : existingRent.totalPrice,
+      observations:
+        req.body.observations !== undefined ? req.body.observations : existingRent.observations,
       createdAt: existingRent.createdAt,
     };
 

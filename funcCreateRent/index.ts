@@ -72,6 +72,10 @@ const funcCreateRent: AzureFunction = async function (
       clientName: req.body.clientName,
       warrantyValue: parseFloat(req.body.warrantyValue),
       isFinished: req.body.isFinished || false,
+      isPaid: req.body.isPaid || false,
+      totalDays: req.body.totalDays ? parseInt(req.body.totalDays) : undefined,
+      totalPrice: req.body.totalPrice ? parseFloat(req.body.totalPrice) : undefined,
+      observations: req.body.observations || undefined,
       createdAt: new Date().toISOString(),
     };
 

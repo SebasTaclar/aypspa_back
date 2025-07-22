@@ -62,6 +62,10 @@ export class RentMongoDbAdapter implements IRentDataSource {
         ...rent,
         deliveryDate: rent.deliveryDate || '',
         isFinished: rent.isFinished || false,
+        isPaid: rent.isPaid || false,
+        totalDays: rent.totalDays || null,
+        totalPrice: rent.totalPrice || null,
+        observations: rent.observations || null,
       };
 
       await collection.insertOne(rentDocument);
@@ -84,17 +88,26 @@ export class RentMongoDbAdapter implements IRentDataSource {
     });
   }
 
-  public async finishRent(id: string, deliveryDate: string): Promise<string | null> {
+  public async finishRent(
+    id: string,
+    deliveryDate: string,
+    totalDays?: number,
+    totalPrice?: number,
+    observations?: string,
+    isPaid?: boolean
+  ): Promise<string | null> {
     return this.withCollection(async (collection) => {
-      const result = await collection.updateOne(
-        { id },
-        {
-          $set: {
-            isFinished: true,
-            deliveryDate: deliveryDate,
-          },
-        }
-      );
+      const updateData: Record<string, unknown> = {
+        isFinished: true,
+        deliveryDate: deliveryDate,
+      };
+
+      if (totalDays !== undefined) updateData.totalDays = totalDays;
+      if (totalPrice !== undefined) updateData.totalPrice = totalPrice;
+      if (observations !== undefined) updateData.observations = observations;
+      if (isPaid !== undefined) updateData.isPaid = isPaid;
+
+      const result = await collection.updateOne({ id }, { $set: updateData });
 
       return result.modifiedCount > 0 ? id : null;
     });
@@ -113,6 +126,10 @@ export class RentMongoDbAdapter implements IRentDataSource {
       clientName: (document.clientName as string) || '',
       warrantyValue: (document.warrantyValue as number) || 0,
       isFinished: (document.isFinished as boolean) || false,
+      isPaid: (document.isPaid as boolean) || false,
+      totalDays: (document.totalDays as number) || undefined,
+      totalPrice: (document.totalPrice as number) || undefined,
+      observations: (document.observations as string) || undefined,
       createdAt: document.createdAt
         ? new Date(document.createdAt as string).toISOString()
         : new Date().toISOString(),
