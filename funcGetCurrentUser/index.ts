@@ -37,7 +37,7 @@ const funcGetCurrentUser: AzureFunction = async function (
 
     try {
       tokenPayload = verifyToken(token);
-    } catch (error) {
+    } catch {
       context.res = {
         status: 401,
         headers: {

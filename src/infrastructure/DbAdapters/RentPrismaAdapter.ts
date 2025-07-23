@@ -23,10 +23,10 @@ export class RentPrismaAdapter implements IRentDataSource {
       const queryObj = query as Record<string, unknown>;
 
       // Build all filters separately
-      const allFilters: any[] = [];
+      const allFilters: unknown[] = [];
 
       // Product filters (code OR name)
-      const productFilters: any[] = [];
+      const productFilters: unknown[] = [];
       if (typeof queryObj.code === 'string') {
         productFilters.push({ code: { contains: queryObj.code, mode: 'insensitive' } });
       }
@@ -58,7 +58,7 @@ export class RentPrismaAdapter implements IRentDataSource {
       }
 
       // Other filters (these use AND as they are different criteria)
-      const otherFilters: any = {};
+      const otherFilters: Record<string, unknown> = {};
       if (typeof queryObj.isFinished === 'boolean') {
         otherFilters.isFinished = queryObj.isFinished;
       }
@@ -66,17 +66,29 @@ export class RentPrismaAdapter implements IRentDataSource {
         otherFilters.paymentMethod = queryObj.paymentMethod;
       }
       if (typeof queryObj.startDate === 'string') {
-        otherFilters.createdAt = { ...otherFilters.createdAt, gte: new Date(queryObj.startDate) };
+        otherFilters.createdAt = {
+          ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
+            ? otherFilters.createdAt
+            : {}),
+          gte: new Date(queryObj.startDate),
+        };
       }
       if (typeof queryObj.endDate === 'string') {
-        otherFilters.createdAt = { ...otherFilters.createdAt, lte: new Date(queryObj.endDate) };
+        otherFilters.createdAt = {
+          ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
+            ? otherFilters.createdAt
+            : {}),
+          lte: new Date(queryObj.endDate),
+        };
       }
 
       // Build dynamic where clause
       if (allFilters.length > 0) {
         whereClause = {
           ...otherFilters,
-          ...(allFilters.length === 1 ? allFilters[0] : { OR: allFilters }),
+          ...(allFilters.length === 1 && typeof allFilters[0] === 'object'
+            ? allFilters[0]
+            : { OR: allFilters }),
         };
       } else {
         whereClause = otherFilters;
@@ -103,10 +115,10 @@ export class RentPrismaAdapter implements IRentDataSource {
       const queryObj = query as Record<string, unknown>;
 
       // Build all filters separately
-      const allFilters: any[] = [];
+      const allFilters: unknown[] = [];
 
       // Product filters (code OR name)
-      const productFilters: any[] = [];
+      const productFilters: unknown[] = [];
       if (typeof queryObj.code === 'string' && queryObj.code.trim() !== '') {
         productFilters.push({ code: { contains: queryObj.code, mode: 'insensitive' } });
       }
@@ -141,7 +153,9 @@ export class RentPrismaAdapter implements IRentDataSource {
       if (allFilters.length > 0) {
         whereClause = {
           ...whereClause,
-          ...(allFilters.length === 1 ? allFilters[0] : { OR: allFilters }),
+          ...(allFilters.length === 1 && typeof allFilters[0] === 'object'
+            ? allFilters[0]
+            : { OR: allFilters }),
         };
       }
     }
@@ -169,10 +183,10 @@ export class RentPrismaAdapter implements IRentDataSource {
       const queryObj = query as Record<string, unknown>;
 
       // Build all filters separately
-      const allFilters: any[] = [];
+      const allFilters: unknown[] = [];
 
       // Product filters (code OR name)
-      const productFilters: any[] = [];
+      const productFilters: unknown[] = [];
       if (typeof queryObj.code === 'string') {
         productFilters.push({ code: { contains: queryObj.code, mode: 'insensitive' } });
       }
@@ -204,12 +218,22 @@ export class RentPrismaAdapter implements IRentDataSource {
       }
 
       // Other filters that should remain AND
-      const otherFilters: any = {};
+      const otherFilters: Record<string, unknown> = {};
       if (typeof queryObj.startDate === 'string') {
-        otherFilters.createdAt = { ...otherFilters.createdAt, gte: new Date(queryObj.startDate) };
+        otherFilters.createdAt = {
+          ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
+            ? otherFilters.createdAt
+            : {}),
+          gte: new Date(queryObj.startDate),
+        };
       }
       if (typeof queryObj.endDate === 'string') {
-        otherFilters.createdAt = { ...otherFilters.createdAt, lte: new Date(queryObj.endDate) };
+        otherFilters.createdAt = {
+          ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
+            ? otherFilters.createdAt
+            : {}),
+          lte: new Date(queryObj.endDate),
+        };
       }
       if (typeof queryObj.isPaid === 'boolean') {
         otherFilters.isPaid = queryObj.isPaid;
@@ -220,7 +244,9 @@ export class RentPrismaAdapter implements IRentDataSource {
         whereClause = {
           ...whereClause,
           ...otherFilters,
-          ...(allFilters.length === 1 ? allFilters[0] : { OR: allFilters }),
+          ...(allFilters.length === 1 && typeof allFilters[0] === 'object' && allFilters[0] !== null
+            ? allFilters[0]
+            : { OR: allFilters }),
         };
       } else {
         whereClause = { ...whereClause, ...otherFilters };
