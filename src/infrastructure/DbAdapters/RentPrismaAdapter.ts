@@ -22,42 +22,65 @@ export class RentPrismaAdapter implements IRentDataSource {
     if (query && typeof query === 'object') {
       const queryObj = query as Record<string, unknown>;
 
-      // Build dynamic where clause with partial matching
-      whereClause = {
-        ...(typeof queryObj.code === 'string' && {
-          product: {
-            code: { contains: queryObj.code, mode: 'insensitive' },
-          },
-        }),
-        ...(typeof queryObj.productName === 'string' && {
-          product: {
-            name: { contains: queryObj.productName, mode: 'insensitive' },
-          },
-        }),
-        ...(typeof queryObj.clientName === 'string' && {
+      // Build all filters separately
+      const allFilters: any[] = [];
+
+      // Product filters (code OR name)
+      const productFilters: any[] = [];
+      if (typeof queryObj.code === 'string') {
+        productFilters.push({ code: { contains: queryObj.code, mode: 'insensitive' } });
+      }
+      if (typeof queryObj.productName === 'string') {
+        productFilters.push({ name: { contains: queryObj.productName, mode: 'insensitive' } });
+      }
+
+      if (productFilters.length > 0) {
+        allFilters.push({
+          product: productFilters.length === 1 ? productFilters[0] : { OR: productFilters },
+        });
+      }
+
+      // Client filters
+      if (typeof queryObj.clientName === 'string') {
+        allFilters.push({
           client: {
             name: { contains: queryObj.clientName, mode: 'insensitive' },
           },
-        }),
-        ...(typeof queryObj.clientRut === 'string' && {
+        });
+      }
+
+      if (typeof queryObj.clientRut === 'string') {
+        allFilters.push({
           client: {
             rut: { contains: queryObj.clientRut },
           },
-        }),
-        ...(typeof queryObj.isFinished === 'boolean' && {
-          isFinished: queryObj.isFinished,
-        }),
-        ...(typeof queryObj.paymentMethod === 'string' && {
-          paymentMethod: queryObj.paymentMethod,
-        }),
-        // Date range filtering using createdAt
-        ...(typeof queryObj.startDate === 'string' && {
-          createdAt: { gte: new Date(queryObj.startDate) },
-        }),
-        ...(typeof queryObj.endDate === 'string' && {
-          createdAt: { lte: new Date(queryObj.endDate) },
-        }),
-      };
+        });
+      }
+
+      // Other filters (these use AND as they are different criteria)
+      const otherFilters: any = {};
+      if (typeof queryObj.isFinished === 'boolean') {
+        otherFilters.isFinished = queryObj.isFinished;
+      }
+      if (typeof queryObj.paymentMethod === 'string') {
+        otherFilters.paymentMethod = queryObj.paymentMethod;
+      }
+      if (typeof queryObj.startDate === 'string') {
+        otherFilters.createdAt = { ...otherFilters.createdAt, gte: new Date(queryObj.startDate) };
+      }
+      if (typeof queryObj.endDate === 'string') {
+        otherFilters.createdAt = { ...otherFilters.createdAt, lte: new Date(queryObj.endDate) };
+      }
+
+      // Build dynamic where clause
+      if (allFilters.length > 0) {
+        whereClause = {
+          ...otherFilters,
+          ...(allFilters.length === 1 ? allFilters[0] : { OR: allFilters }),
+        };
+      } else {
+        whereClause = otherFilters;
+      }
     }
 
     const rents = await this.prisma.rent.findMany({
@@ -79,29 +102,48 @@ export class RentPrismaAdapter implements IRentDataSource {
     if (query && typeof query === 'object') {
       const queryObj = query as Record<string, unknown>;
 
-      whereClause = {
-        ...whereClause,
-        ...(typeof queryObj.code === 'string' && {
-          product: {
-            code: { contains: queryObj.code, mode: 'insensitive' },
-          },
-        }),
-        ...(typeof queryObj.productName === 'string' && {
-          product: {
-            name: { contains: queryObj.productName, mode: 'insensitive' },
-          },
-        }),
-        ...(typeof queryObj.clientName === 'string' && {
+      // Build all filters separately
+      const allFilters: any[] = [];
+
+      // Product filters (code OR name)
+      const productFilters: any[] = [];
+      if (typeof queryObj.code === 'string' && queryObj.code.trim() !== '') {
+        productFilters.push({ code: { contains: queryObj.code, mode: 'insensitive' } });
+      }
+      if (typeof queryObj.productName === 'string' && queryObj.productName.trim() !== '') {
+        productFilters.push({ name: { contains: queryObj.productName, mode: 'insensitive' } });
+      }
+
+      if (productFilters.length > 0) {
+        allFilters.push({
+          product: productFilters.length === 1 ? productFilters[0] : { OR: productFilters },
+        });
+      }
+
+      // Client filters
+      if (typeof queryObj.clientName === 'string' && queryObj.clientName.trim() !== '') {
+        allFilters.push({
           client: {
             name: { contains: queryObj.clientName, mode: 'insensitive' },
           },
-        }),
-        ...(typeof queryObj.clientRut === 'string' && {
+        });
+      }
+
+      if (typeof queryObj.clientRut === 'string' && queryObj.clientRut.trim() !== '') {
+        allFilters.push({
           client: {
             rut: { contains: queryObj.clientRut },
           },
-        }),
-      };
+        });
+      }
+
+      // If we have multiple filter types, use OR between them
+      if (allFilters.length > 0) {
+        whereClause = {
+          ...whereClause,
+          ...(allFilters.length === 1 ? allFilters[0] : { OR: allFilters }),
+        };
+      }
     }
 
     const rents = await this.prisma.rent.findMany({
@@ -126,40 +168,63 @@ export class RentPrismaAdapter implements IRentDataSource {
     if (query && typeof query === 'object') {
       const queryObj = query as Record<string, unknown>;
 
-      whereClause = {
-        ...whereClause,
-        ...(typeof queryObj.code === 'string' && {
-          product: {
-            code: { contains: queryObj.code, mode: 'insensitive' },
-          },
-        }),
-        ...(typeof queryObj.productName === 'string' && {
-          product: {
-            name: { contains: queryObj.productName, mode: 'insensitive' },
-          },
-        }),
-        ...(typeof queryObj.clientName === 'string' && {
+      // Build all filters separately
+      const allFilters: any[] = [];
+
+      // Product filters (code OR name)
+      const productFilters: any[] = [];
+      if (typeof queryObj.code === 'string') {
+        productFilters.push({ code: { contains: queryObj.code, mode: 'insensitive' } });
+      }
+      if (typeof queryObj.productName === 'string') {
+        productFilters.push({ name: { contains: queryObj.productName, mode: 'insensitive' } });
+      }
+
+      if (productFilters.length > 0) {
+        allFilters.push({
+          product: productFilters.length === 1 ? productFilters[0] : { OR: productFilters },
+        });
+      }
+
+      // Client filters
+      if (typeof queryObj.clientName === 'string') {
+        allFilters.push({
           client: {
             name: { contains: queryObj.clientName, mode: 'insensitive' },
           },
-        }),
-        ...(typeof queryObj.clientRut === 'string' && {
+        });
+      }
+
+      if (typeof queryObj.clientRut === 'string') {
+        allFilters.push({
           client: {
             rut: { contains: queryObj.clientRut },
           },
-        }),
-        // Date range filtering for finished rents
-        ...(typeof queryObj.startDate === 'string' && {
-          createdAt: { gte: new Date(queryObj.startDate) },
-        }),
-        ...(typeof queryObj.endDate === 'string' && {
-          createdAt: { lte: new Date(queryObj.endDate) },
-        }),
-        // Payment status filtering
-        ...(typeof queryObj.isPaid === 'boolean' && {
-          isPaid: queryObj.isPaid,
-        }),
-      };
+        });
+      }
+
+      // Other filters that should remain AND
+      const otherFilters: any = {};
+      if (typeof queryObj.startDate === 'string') {
+        otherFilters.createdAt = { ...otherFilters.createdAt, gte: new Date(queryObj.startDate) };
+      }
+      if (typeof queryObj.endDate === 'string') {
+        otherFilters.createdAt = { ...otherFilters.createdAt, lte: new Date(queryObj.endDate) };
+      }
+      if (typeof queryObj.isPaid === 'boolean') {
+        otherFilters.isPaid = queryObj.isPaid;
+      }
+
+      // Build where clause
+      if (allFilters.length > 0) {
+        whereClause = {
+          ...whereClause,
+          ...otherFilters,
+          ...(allFilters.length === 1 ? allFilters[0] : { OR: allFilters }),
+        };
+      } else {
+        whereClause = { ...whereClause, ...otherFilters };
+      }
     }
 
     // Default pagination values
