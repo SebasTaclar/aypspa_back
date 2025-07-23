@@ -1,5 +1,5 @@
 export type Rent = {
-  id: string;
+  id: string; // Required like other entities, but handled specially during creation
   // Fields populated from joins (for frontend compatibility)
   code: string; // From product.code
   productName: string; // From product.name

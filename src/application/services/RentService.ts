@@ -70,17 +70,7 @@ export class RentService {
       throw new Error('Valid rent data is required.');
     }
 
-    // Set default values
-    const newRent: Rent = {
-      ...rent,
-      id: rent.id || this.generateRentId(),
-      deliveryDate: rent.deliveryDate || '',
-      isFinished: false,
-      isPaid: rent.isPaid || false,
-      createdAt: rent.createdAt || new Date().toISOString(),
-    };
-
-    return this.rentRepository.create(newRent);
+    return this.rentRepository.create(rent);
   }
 
   /**
@@ -142,13 +132,5 @@ export class RentService {
       observations,
       isPaid
     );
-  }
-
-  /**
-   * Generates a unique rent ID
-   * @returns A unique rent ID
-   */
-  private generateRentId(): string {
-    return Math.floor(Math.random() * 10000).toString();
   }
 }
