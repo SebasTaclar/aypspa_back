@@ -34,6 +34,7 @@ export class UserPrismaAdapter implements IUserDataSource {
         password: true,
         name: true,
         role: true,
+        membershipPaid: true,
       },
       orderBy: { createdAt: 'asc' }, // Similar to LINQ OrderBy
     });
@@ -44,6 +45,7 @@ export class UserPrismaAdapter implements IUserDataSource {
       password: user.password,
       name: user.name,
       role: user.role,
+      membershipPaid: user.membershipPaid,
     }));
   }
 
@@ -56,6 +58,7 @@ export class UserPrismaAdapter implements IUserDataSource {
         password: true,
         name: true,
         role: true,
+        membershipPaid: true,
       },
     });
 
@@ -67,6 +70,7 @@ export class UserPrismaAdapter implements IUserDataSource {
       password: user.password,
       name: user.name,
       role: user.role,
+      membershipPaid: user.membershipPaid,
     };
   }
 
@@ -77,6 +81,7 @@ export class UserPrismaAdapter implements IUserDataSource {
         password: user.password,
         name: user.name,
         role: user.role,
+        membershipPaid: user.membershipPaid || false,
       },
       select: {
         id: true,
@@ -84,6 +89,7 @@ export class UserPrismaAdapter implements IUserDataSource {
         password: true,
         name: true,
         role: true,
+        membershipPaid: true,
       },
     });
 
@@ -93,6 +99,7 @@ export class UserPrismaAdapter implements IUserDataSource {
       password: createdUser.password,
       name: createdUser.name,
       role: createdUser.role,
+      membershipPaid: createdUser.membershipPaid,
     };
   }
 
@@ -105,6 +112,7 @@ export class UserPrismaAdapter implements IUserDataSource {
           ...(user.password && { password: user.password }),
           ...(user.name && { name: user.name }),
           ...(user.role && { role: user.role }),
+          ...(user.membershipPaid !== undefined && { membershipPaid: user.membershipPaid }),
         },
         select: {
           id: true,
@@ -112,6 +120,7 @@ export class UserPrismaAdapter implements IUserDataSource {
           password: true,
           name: true,
           role: true,
+          membershipPaid: true,
         },
       });
 
@@ -121,6 +130,7 @@ export class UserPrismaAdapter implements IUserDataSource {
         password: updatedUser.password,
         name: updatedUser.name,
         role: updatedUser.role,
+        membershipPaid: updatedUser.membershipPaid,
       };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
@@ -154,6 +164,7 @@ export class UserPrismaAdapter implements IUserDataSource {
         password: true,
         name: true,
         role: true,
+        membershipPaid: true,
       },
     });
 
@@ -165,6 +176,7 @@ export class UserPrismaAdapter implements IUserDataSource {
       password: user.password,
       name: user.name,
       role: user.role,
+      membershipPaid: user.membershipPaid,
     };
   }
 
@@ -177,6 +189,7 @@ export class UserPrismaAdapter implements IUserDataSource {
         password: true,
         name: true,
         role: true,
+        membershipPaid: true,
       },
       orderBy: { name: 'asc' },
     });
@@ -187,6 +200,7 @@ export class UserPrismaAdapter implements IUserDataSource {
       password: user.password,
       name: user.name,
       role: user.role,
+      membershipPaid: user.membershipPaid,
     }));
   }
 

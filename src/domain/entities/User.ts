@@ -4,4 +4,5 @@ export type User = {
   password: string;
   name: string;
   role: string;
+  membershipPaid: boolean;
 };

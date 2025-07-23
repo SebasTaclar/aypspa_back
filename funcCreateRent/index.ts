@@ -1,9 +1,13 @@
 import { AzureFunction, Context, HttpRequest } from '@azure/functions';
 import { FunctionHandler } from '../src/application/services/Main';
 import { RentFactory } from '../src/factories/RentFactory';
+import { ClientFactory } from '../src/factories/ClientFactory';
+import { ProductFactory } from '../src/factories/ProductFactory';
 import { RentService } from '../src/application/services/RentService';
-import { LogModel } from '../src/domain/entities/LogModel';
+import { ClientService } from '../src/application/services/ClientService';
+import { ProductService } from '../src/application/services/ProductService';
 import { Rent } from '../src/domain/entities/Rent';
+import { LogModel } from '../src/domain/entities/LogModel';
 
 const funcCreateRent: AzureFunction = async function (
   context: Context,
@@ -29,7 +33,10 @@ const funcCreateRent: AzureFunction = async function (
       return;
     }
 
+    // Initialize services
     const rentService: RentService = await RentFactory(log);
+    const clientService: ClientService = await ClientFactory(log);
+    const productService: ProductService = await ProductFactory(log);
 
     // Validate required fields
     const requiredFields = [
@@ -60,23 +67,69 @@ const funcCreateRent: AzureFunction = async function (
       return;
     }
 
+    // Find client by RUT
+    const clients = await clientService.getAllClients({ rut: req.body.clientRut });
+    if (clients.length === 0) {
+      context.res = {
+        status: 404,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({
+          success: false,
+          error: 'Not Found',
+          message: `Client with RUT ${req.body.clientRut} not found`,
+        }),
+      };
+      return;
+    }
+    const client = clients[0];
+
+    // Find product by name
+    const products = await productService.getAllProducts({ name: req.body.productName });
+    if (products.length === 0) {
+      context.res = {
+        status: 404,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({
+          success: false,
+          error: 'Not Found',
+          message: `Product with name ${req.body.productName} not found`,
+        }),
+      };
+      return;
+    }
+    const product = products[0];
+
     const rentData: Rent = {
       id: req.body.id || Math.floor(Math.random() * 10000).toString(),
       code: req.body.code,
+      // Data from frontend (for compatibility)
       productName: req.body.productName,
+      clientRut: req.body.clientRut,
+      clientName: req.body.clientName,
+      // Core rent data
       quantity: parseInt(req.body.quantity),
       totalValuePerDay: parseFloat(req.body.totalValuePerDay),
-      clientRut: req.body.clientRut,
       deliveryDate: req.body.deliveryDate || '',
       paymentMethod: req.body.paymentMethod,
-      clientName: req.body.clientName,
       warrantyValue: parseFloat(req.body.warrantyValue),
       isFinished: req.body.isFinished || false,
       isPaid: req.body.isPaid || false,
-      totalDays: req.body.totalDays ? parseInt(req.body.totalDays) : undefined,
+      totalDays:
+        req.body.totalDays !== undefined && req.body.totalDays !== null
+          ? parseFloat(req.body.totalDays)
+          : undefined,
       totalPrice: req.body.totalPrice ? parseFloat(req.body.totalPrice) : undefined,
       observations: req.body.observations || undefined,
       createdAt: new Date().toISOString(),
+      // IDs from database lookups
+      clientId: parseInt(client.id),
+      productId: parseInt(product._id || '0'),
     };
 
     log.logInfo(`Creating rent with code: ${rentData.code}`);

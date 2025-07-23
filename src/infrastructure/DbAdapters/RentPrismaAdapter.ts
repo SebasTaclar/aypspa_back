@@ -1,7 +1,16 @@
 import { getPrismaClient } from '../../config/PrismaClient';
-import { IRentDataSource } from '../../domain/interfaces/IRentDataSource';
+import {
+  IRentDataSource,
+  PaginationOptions,
+  PaginatedResult,
+} from '../../domain/interfaces/IRentDataSource';
 import { Rent } from '../../domain/entities/Rent';
-import { Prisma, Rent as PrismaRent } from '@prisma/client';
+import {
+  Prisma,
+  Rent as PrismaRent,
+  Client as PrismaClient,
+  Product as PrismaProduct,
+} from '@prisma/client';
 
 export class RentPrismaAdapter implements IRentDataSource {
   private readonly prisma = getPrismaClient();
@@ -16,16 +25,24 @@ export class RentPrismaAdapter implements IRentDataSource {
       // Build dynamic where clause with partial matching
       whereClause = {
         ...(typeof queryObj.code === 'string' && {
-          code: { contains: queryObj.code, mode: 'insensitive' },
+          product: {
+            code: { contains: queryObj.code, mode: 'insensitive' },
+          },
         }),
         ...(typeof queryObj.productName === 'string' && {
-          productName: { contains: queryObj.productName, mode: 'insensitive' },
+          product: {
+            name: { contains: queryObj.productName, mode: 'insensitive' },
+          },
         }),
         ...(typeof queryObj.clientName === 'string' && {
-          clientName: { contains: queryObj.clientName, mode: 'insensitive' },
+          client: {
+            name: { contains: queryObj.clientName, mode: 'insensitive' },
+          },
         }),
         ...(typeof queryObj.clientRut === 'string' && {
-          clientRut: { contains: queryObj.clientRut },
+          client: {
+            rut: { contains: queryObj.clientRut },
+          },
         }),
         ...(typeof queryObj.isFinished === 'boolean' && {
           isFinished: queryObj.isFinished,
@@ -33,7 +50,7 @@ export class RentPrismaAdapter implements IRentDataSource {
         ...(typeof queryObj.paymentMethod === 'string' && {
           paymentMethod: queryObj.paymentMethod,
         }),
-        // Date range filtering using createdAt instead of creationDate
+        // Date range filtering using createdAt
         ...(typeof queryObj.startDate === 'string' && {
           createdAt: { gte: new Date(queryObj.startDate) },
         }),
@@ -45,6 +62,10 @@ export class RentPrismaAdapter implements IRentDataSource {
 
     const rents = await this.prisma.rent.findMany({
       where: whereClause,
+      include: {
+        client: true,
+        product: true,
+      },
       orderBy: { createdAt: 'desc' }, // Similar to LINQ OrderByDescending
     });
 
@@ -61,29 +82,44 @@ export class RentPrismaAdapter implements IRentDataSource {
       whereClause = {
         ...whereClause,
         ...(typeof queryObj.code === 'string' && {
-          code: { contains: queryObj.code, mode: 'insensitive' },
+          product: {
+            code: { contains: queryObj.code, mode: 'insensitive' },
+          },
         }),
         ...(typeof queryObj.productName === 'string' && {
-          productName: { contains: queryObj.productName, mode: 'insensitive' },
+          product: {
+            name: { contains: queryObj.productName, mode: 'insensitive' },
+          },
         }),
         ...(typeof queryObj.clientName === 'string' && {
-          clientName: { contains: queryObj.clientName, mode: 'insensitive' },
+          client: {
+            name: { contains: queryObj.clientName, mode: 'insensitive' },
+          },
         }),
         ...(typeof queryObj.clientRut === 'string' && {
-          clientRut: { contains: queryObj.clientRut },
+          client: {
+            rut: { contains: queryObj.clientRut },
+          },
         }),
       };
     }
 
     const rents = await this.prisma.rent.findMany({
       where: whereClause,
+      include: {
+        client: true,
+        product: true,
+      },
       orderBy: { createdAt: 'desc' },
     });
 
     return rents.map(this.mapToRentEntity);
   }
 
-  public async getFinishedRents(query?: unknown): Promise<Rent[]> {
+  public async getFinishedRents(
+    query?: unknown,
+    pagination?: PaginationOptions
+  ): Promise<PaginatedResult<Rent>> {
     let whereClause: Prisma.RentWhereInput = { isFinished: true };
 
     // Handle additional query filtering for finished rents
@@ -93,26 +129,70 @@ export class RentPrismaAdapter implements IRentDataSource {
       whereClause = {
         ...whereClause,
         ...(typeof queryObj.code === 'string' && {
-          code: { contains: queryObj.code, mode: 'insensitive' },
+          product: {
+            code: { contains: queryObj.code, mode: 'insensitive' },
+          },
         }),
         ...(typeof queryObj.productName === 'string' && {
-          productName: { contains: queryObj.productName, mode: 'insensitive' },
+          product: {
+            name: { contains: queryObj.productName, mode: 'insensitive' },
+          },
         }),
         ...(typeof queryObj.clientName === 'string' && {
-          clientName: { contains: queryObj.clientName, mode: 'insensitive' },
+          client: {
+            name: { contains: queryObj.clientName, mode: 'insensitive' },
+          },
         }),
         ...(typeof queryObj.clientRut === 'string' && {
-          clientRut: { contains: queryObj.clientRut },
+          client: {
+            rut: { contains: queryObj.clientRut },
+          },
+        }),
+        // Date range filtering for finished rents
+        ...(typeof queryObj.startDate === 'string' && {
+          createdAt: { gte: new Date(queryObj.startDate) },
+        }),
+        ...(typeof queryObj.endDate === 'string' && {
+          createdAt: { lte: new Date(queryObj.endDate) },
+        }),
+        // Payment status filtering
+        ...(typeof queryObj.isPaid === 'boolean' && {
+          isPaid: queryObj.isPaid,
         }),
       };
     }
 
-    const rents = await this.prisma.rent.findMany({
+    // Default pagination values
+    const page = pagination?.page || 1;
+    const pageSize = pagination?.pageSize || 25;
+    const skip = (page - 1) * pageSize;
+
+    // Get total count for pagination metadata
+    const totalCount = await this.prisma.rent.count({
       where: whereClause,
-      orderBy: { createdAt: 'desc' },
     });
 
-    return rents.map(this.mapToRentEntity);
+    // Get paginated results with joins
+    const rents = await this.prisma.rent.findMany({
+      where: whereClause,
+      include: {
+        client: true,
+        product: true,
+      },
+      orderBy: { createdAt: 'desc' },
+      skip: skip,
+      take: pageSize,
+    });
+
+    const totalPages = Math.ceil(totalCount / pageSize);
+
+    return {
+      data: rents.map(this.mapToRentEntity),
+      totalCount,
+      totalPages,
+      currentPage: page,
+      pageSize,
+    };
   }
 
   public async getById(id: string): Promise<Rent | null> {
@@ -124,6 +204,10 @@ export class RentPrismaAdapter implements IRentDataSource {
 
       const rent = await this.prisma.rent.findUnique({
         where: { id: rentId },
+        include: {
+          client: true,
+          product: true,
+        },
       });
 
       return rent ? this.mapToRentEntity(rent) : null;
@@ -137,20 +221,21 @@ export class RentPrismaAdapter implements IRentDataSource {
     try {
       const createdRent = await this.prisma.rent.create({
         data: {
-          code: rent.code,
-          productName: rent.productName,
           quantity: rent.quantity,
-          totalValuePerDay: rent.totalValuePerDay,
-          clientRut: rent.clientRut,
           deliveryDate: rent.deliveryDate || '',
           paymentMethod: rent.paymentMethod,
-          clientName: rent.clientName,
           warrantyValue: rent.warrantyValue,
           isFinished: rent.isFinished || false,
           isPaid: rent.isPaid || false,
           totalDays: rent.totalDays || null,
           totalPrice: rent.totalPrice || null,
           observations: rent.observations || null,
+          clientId: rent.clientId,
+          productId: rent.productId,
+        },
+        include: {
+          client: true,
+          product: true,
         },
       });
 
@@ -171,20 +256,17 @@ export class RentPrismaAdapter implements IRentDataSource {
       const updatedRent = await this.prisma.rent.update({
         where: { id: rentId },
         data: {
-          code: data.code,
-          productName: data.productName,
           quantity: data.quantity,
-          totalValuePerDay: data.totalValuePerDay,
-          clientRut: data.clientRut,
           deliveryDate: data.deliveryDate,
           paymentMethod: data.paymentMethod,
-          clientName: data.clientName,
           warrantyValue: data.warrantyValue,
           isFinished: data.isFinished,
           isPaid: data.isPaid,
           totalDays: data.totalDays || null,
           totalPrice: data.totalPrice || null,
           observations: data.observations || null,
+          clientId: data.clientId,
+          productId: data.productId,
         },
       });
 
@@ -246,24 +328,31 @@ export class RentPrismaAdapter implements IRentDataSource {
     }
   }
 
-  private mapToRentEntity(rent: PrismaRent): Rent {
+  private mapToRentEntity(
+    rent: PrismaRent & { client: PrismaClient; product: PrismaProduct }
+  ): Rent {
     return {
       id: rent.id.toString(),
-      code: rent.code,
-      productName: rent.productName,
+      code: rent.product.code, // Get code from product join
+      // Data from joins (for frontend compatibility)
+      productName: rent.product.name,
+      clientRut: rent.client.rut || '',
+      clientName: rent.client.name,
+      // Core rent data
       quantity: rent.quantity,
-      totalValuePerDay: Number(rent.totalValuePerDay),
-      clientRut: rent.clientRut,
+      totalValuePerDay: Number(rent.product.priceTotal), // Get from product instead of denormalized field
       deliveryDate: rent.deliveryDate || '',
       paymentMethod: rent.paymentMethod,
-      clientName: rent.clientName,
       warrantyValue: Number(rent.warrantyValue),
       isFinished: rent.isFinished,
       isPaid: rent.isPaid,
-      totalDays: rent.totalDays || undefined,
+      totalDays: rent.totalDays ? Number(rent.totalDays) : undefined,
       totalPrice: rent.totalPrice ? Number(rent.totalPrice) : undefined,
       observations: rent.observations || undefined,
       createdAt: rent.createdAt.toISOString(),
+      // Internal IDs for operations
+      clientId: rent.clientId,
+      productId: rent.productId,
     };
   }
 }

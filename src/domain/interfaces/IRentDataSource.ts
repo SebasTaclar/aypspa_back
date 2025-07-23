@@ -1,5 +1,18 @@
 import { Rent } from '../entities/Rent';
 
+export interface PaginationOptions {
+  page: number;
+  pageSize: number;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  totalCount: number;
+  totalPages: number;
+  currentPage: number;
+  pageSize: number;
+}
+
 export interface IRentDataSource {
   /**
    * Retrieves all rents based on optional query parameters
@@ -45,11 +58,12 @@ export interface IRentDataSource {
   getActiveRents(query?: unknown): Promise<Rent[]>;
 
   /**
-   * Retrieves finished rents
+   * Retrieves finished rents with pagination
    * @param query - Optional query parameters for filtering
-   * @returns Promise containing array of finished rents
+   * @param pagination - Optional pagination parameters
+   * @returns Promise containing paginated finished rents
    */
-  getFinishedRents(query?: unknown): Promise<Rent[]>;
+  getFinishedRents(query?: unknown, pagination?: PaginationOptions): Promise<PaginatedResult<Rent>>;
 
   /**
    * Marks a rent as finished

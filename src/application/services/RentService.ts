@@ -1,4 +1,8 @@
-import { IRentDataSource } from '../../domain/interfaces/IRentDataSource';
+import {
+  IRentDataSource,
+  PaginationOptions,
+  PaginatedResult,
+} from '../../domain/interfaces/IRentDataSource';
 import { Rent } from '../../domain/entities/Rent';
 import { RentQueryDto } from '../dtos/RentDto';
 
@@ -32,12 +36,16 @@ export class RentService {
   }
 
   /**
-   * Retrieves finished rents
+   * Retrieves finished rents with pagination
    * @param query - Optional query parameters for filtering
-   * @returns Promise containing array of finished rents
+   * @param pagination - Optional pagination parameters
+   * @returns Promise containing paginated finished rents
    */
-  public async getFinishedRents(query?: RentQueryDto): Promise<Rent[]> {
-    return this.rentRepository.getFinishedRents(query);
+  public async getFinishedRents(
+    query?: RentQueryDto,
+    pagination?: PaginationOptions
+  ): Promise<PaginatedResult<Rent>> {
+    return this.rentRepository.getFinishedRents(query, pagination);
   }
 
   /**

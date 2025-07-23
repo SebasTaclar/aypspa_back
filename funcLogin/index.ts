@@ -30,6 +30,7 @@ const funcLogin: AzureFunction = async function (
     role: user.role,
     name: user.name,
     username: user.username,
+    membershipPaid: user.membershipPaid,
   });
 
   context.res = {

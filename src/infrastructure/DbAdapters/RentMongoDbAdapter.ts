@@ -1,6 +1,10 @@
 import { Collection } from 'mongodb';
 import { connectMongoClient, mongoClient } from '../../config/MongoClient';
-import { IRentDataSource } from '../../domain/interfaces/IRentDataSource';
+import {
+  IRentDataSource,
+  PaginationOptions,
+  PaginatedResult,
+} from '../../domain/interfaces/IRentDataSource';
 import { Rent } from '../../domain/entities/Rent';
 
 export class RentMongoDbAdapter implements IRentDataSource {
@@ -39,13 +43,40 @@ export class RentMongoDbAdapter implements IRentDataSource {
     });
   }
 
-  public async getFinishedRents(query?: unknown): Promise<Rent[]> {
+  public async getFinishedRents(
+    query?: unknown,
+    pagination?: PaginationOptions
+  ): Promise<PaginatedResult<Rent>> {
     return this.withCollection(async (collection) => {
       const baseQuery =
         query && typeof query === 'object' ? (query as Record<string, unknown>) : {};
       const filter = { ...baseQuery, isFinished: true };
-      const rents = await collection.find(filter).toArray();
-      return rents.map(this.mapToRentEntity);
+
+      // Default pagination values
+      const page = pagination?.page || 1;
+      const pageSize = pagination?.pageSize || 25;
+      const skip = (page - 1) * pageSize;
+
+      // Get total count for pagination metadata
+      const totalCount = await collection.countDocuments(filter);
+
+      // Get paginated results
+      const rents = await collection
+        .find(filter)
+        .sort({ createdAt: -1 }) // Sort by newest first
+        .skip(skip)
+        .limit(pageSize)
+        .toArray();
+
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      return {
+        data: rents.map(this.mapToRentEntity),
+        totalCount,
+        totalPages,
+        currentPage: page,
+        pageSize,
+      };
     });
   }
 
@@ -117,13 +148,15 @@ export class RentMongoDbAdapter implements IRentDataSource {
     return {
       id: document.id?.toString() || document._id?.toString() || '',
       code: (document.code as string) || '',
+      // Frontend compatibility fields (should be populated from joins in real implementation)
       productName: (document.productName as string) || '',
+      clientRut: (document.clientRut as string) || '',
+      clientName: (document.clientName as string) || '',
+      // Core rent data
       quantity: (document.quantity as number) || 0,
       totalValuePerDay: (document.totalValuePerDay as number) || 0,
-      clientRut: (document.clientRut as string) || '',
       deliveryDate: (document.deliveryDate as string) || '',
       paymentMethod: (document.paymentMethod as string) || '',
-      clientName: (document.clientName as string) || '',
       warrantyValue: (document.warrantyValue as number) || 0,
       isFinished: (document.isFinished as boolean) || false,
       isPaid: (document.isPaid as boolean) || false,
@@ -133,6 +166,9 @@ export class RentMongoDbAdapter implements IRentDataSource {
       createdAt: document.createdAt
         ? new Date(document.createdAt as string).toISOString()
         : new Date().toISOString(),
+      // Internal IDs - in MongoDB implementation, these should come from lookups
+      clientId: (document.clientId as number) || 0,
+      productId: (document.productId as number) || 0,
     };
   }
 }

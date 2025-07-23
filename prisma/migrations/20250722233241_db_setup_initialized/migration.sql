@@ -23,6 +23,7 @@ CREATE TABLE "clients" (
     "creation_date" TEXT,
     "frequent_client" TEXT,
     "created" TEXT,
+    "photo_file_name" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -49,19 +50,19 @@ CREATE TABLE "products" (
 -- CreateTable
 CREATE TABLE "rents" (
     "id" SERIAL NOT NULL,
-    "code" TEXT NOT NULL,
-    "product_name" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
-    "total_value_per_day" DECIMAL(10,2) NOT NULL DEFAULT 0,
-    "client_rut" TEXT NOT NULL,
     "delivery_date" TEXT,
     "payment_method" TEXT NOT NULL,
-    "client_name" TEXT NOT NULL,
     "warranty_value" DECIMAL(10,2) NOT NULL DEFAULT 0,
-    "creation_date" TEXT NOT NULL,
     "is_finished" BOOLEAN NOT NULL DEFAULT false,
+    "is_paid" BOOLEAN NOT NULL DEFAULT false,
+    "total_days" INTEGER,
+    "total_price" DECIMAL(10,2),
+    "observations" TEXT,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "client_id" INTEGER NOT NULL,
+    "product_id" INTEGER NOT NULL,
 
     CONSTRAINT "rents_pkey" PRIMARY KEY ("id")
 );
@@ -72,5 +73,8 @@ CREATE UNIQUE INDEX "users_username_key" ON "users"("username");
 -- CreateIndex
 CREATE UNIQUE INDEX "products_code_key" ON "products"("code");
 
--- CreateIndex
-CREATE UNIQUE INDEX "rents_code_key" ON "rents"("code");
+-- AddForeignKey
+ALTER TABLE "rents" ADD CONSTRAINT "rents_client_id_fkey" FOREIGN KEY ("client_id") REFERENCES "clients"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "rents" ADD CONSTRAINT "rents_product_id_fkey" FOREIGN KEY ("product_id") REFERENCES "products"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

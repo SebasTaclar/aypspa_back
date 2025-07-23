@@ -12,13 +12,14 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  password  String
-  name      String
-  role      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id             Int      @id @default(autoincrement())
+  username       String   @unique
+  password       String
+  name           String
+  role           String
+  membershipPaid Boolean  @default(false) @map("membership_paid")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
 
   @@map("users")
 }
@@ -38,6 +39,9 @@ model Client {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
+  // Relations
+  rents           Rent[]
+
   @@map("clients")
 }
 
@@ -54,27 +58,33 @@ model Product {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
+  // Relations
+  rents         Rent[]
+
   @@map("products")
 }
 
 model Rent {
   id               Int      @id @default(autoincrement())
-  code             String
-  productName      String   @map("product_name")
   quantity         Int      @default(1)
-  totalValuePerDay Decimal  @default(0) @map("total_value_per_day") @db.Decimal(10, 2)
-  clientRut        String   @map("client_rut")
   deliveryDate     String?  @map("delivery_date")
   paymentMethod    String   @map("payment_method")
-  clientName       String   @map("client_name")
   warrantyValue    Decimal  @default(0) @map("warranty_value") @db.Decimal(10, 2)
   isFinished       Boolean  @default(false) @map("is_finished")
   isPaid           Boolean  @default(false) @map("is_paid")
-  totalDays        Int?     @map("total_days")
+  totalDays        Decimal? @map("total_days") @db.Decimal(10, 2)
   totalPrice       Decimal? @map("total_price") @db.Decimal(10, 2)
   observations     String?  @map("observations")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Foreign Keys
+  clientId         Int      @map("client_id")
+  productId        Int      @map("product_id")
+
+  // Relations
+  client           Client   @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Restrict)
 
   @@map("rents")
 }

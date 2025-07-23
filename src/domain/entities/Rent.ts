@@ -1,13 +1,15 @@
 export type Rent = {
   id: string;
-  code: string;
-  productName: string;
+  // Fields populated from joins (for frontend compatibility)
+  code: string; // From product.code
+  productName: string; // From product.name
+  totalValuePerDay: number; // From product.priceTotal or priceWarranty
+  clientRut: string; // From client.rut
+  clientName: string; // From client.name
+  // Core rent fields
   quantity: number;
-  totalValuePerDay: number;
-  clientRut: string;
   deliveryDate: string;
   paymentMethod: string;
-  clientName: string;
   warrantyValue: number;
   isFinished: boolean;
   isPaid: boolean;
@@ -15,4 +17,7 @@ export type Rent = {
   totalPrice?: number;
   observations?: string;
   createdAt: string;
+  // Internal IDs for database operations
+  clientId: number;
+  productId: number;
 };
