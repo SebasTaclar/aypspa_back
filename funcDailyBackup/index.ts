@@ -1,11 +1,10 @@
 import { AzureFunction, Context } from '@azure/functions';
 import { BackupFactory } from '../src/factories/BackupFactory';
-import { LogModel } from '../src/domain/entities/LogModel';
+import { Logger } from '../src/shared/Logger';
 
-const funcDailyBackup: AzureFunction = async function (
-  context: Context,
-  log: LogModel
-): Promise<void> {
+const funcDailyBackup: AzureFunction = async function (context: Context): Promise<void> {
+  const log = new Logger(context.log);
+
   try {
     // Log current schedule configuration
     const currentSchedule = process.env.DAILY_BACKUP_SCHEDULE || 'NOT_CONFIGURED';
@@ -16,7 +15,7 @@ const funcDailyBackup: AzureFunction = async function (
       log.logWarning('DAILY_BACKUP_SCHEDULE environment variable is not configured');
     }
 
-    // Initialize backup service using the provided LogModel
+    // Initialize backup service using the Logger instance
     const backupService = await BackupFactory(log);
 
     // Generate daily backup (no custom emails, uses defaults)
@@ -41,4 +40,5 @@ const funcDailyBackup: AzureFunction = async function (
     };
   }
 };
+
 export = funcDailyBackup;
