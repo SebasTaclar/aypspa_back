@@ -1,0 +1,12 @@
+{
+  "_comment": "Timer schedule configurado via variable de entorno DAILY_BACKUP_SCHEDULE",
+  "bindings": [
+    {
+      "name": "dailyBackupTimer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "%DAILY_BACKUP_SCHEDULE%"
+    }
+  ],
+  "scriptFile": "../dist/funcDailyBackup/index.js"
+}

@@ -96,6 +96,51 @@ const avgPrice = await productAdapter.getAveragePrice();
 - `npm run db:migrate` - Create migration files
 - `npm run db:studio` - Open Prisma Studio (database browser)
 
+## Environment Variables
+
+Configure these environment variables in `local.settings.json` for development or Azure Function App Configuration for production:
+
+### Database Configuration
+
+- `DATABASE_TYPE` - Database type: `"prisma"` (recommended) or `"mongodb"`
+- `DATABASE_URL` - PostgreSQL connection string for Prisma (format: `postgresql://user:password@host:port/database`)
+- `MONGO_DB_URI` - MongoDB connection string (only if using MongoDB)
+- `MONGO_DB_DATABASE` - MongoDB database name (only if using MongoDB)
+
+### Authentication
+
+- `JWT_SECRET` - Secret key for JWT token signing
+- `JWT_EXPIRATION` - JWT token expiration time in seconds (e.g., `"3600"` for 1 hour)
+
+### Email Configuration (Azure Communication Services)
+
+- `COMMUNICATION_SERVICES_CONNECTION_STRING` - Azure Communication Services connection string
+- `FROM_EMAIL` - Sender email address (must be verified in Azure Communication Services)
+- `BACKUP_EMAIL_RECIPIENTS` - Comma-separated list of default backup email recipients
+
+### Backup Configuration
+
+- `DAILY_BACKUP_SCHEDULE` - Cron expression for daily backup schedule (e.g., `"0 0 15,23 * * *"` for 3:00 PM and 11:00 PM daily)
+
+### AWS S3 Configuration (for file storage)
+
+- `AWS_ACCESS_KEY_ID` - AWS access key
+- `AWS_SECRET_ACCESS_KEY` - AWS secret key
+- `AWS_REGION` - AWS region (e.g., `"us-east-2"`)
+- `AWS_BUCKET_NAME` - S3 bucket name
+
+### Development
+
+- `DEBUG` - Enable debug logging: `"true"` or `"false"`
+- `NODE_ENV` - Environment: `"development"` or `"production"`
+
+### Example Cron Expressions for DAILY_BACKUP_SCHEDULE:
+
+- `"0 0 15,23 * * *"` - Daily at 3:00 PM and 11:00 PM
+- `"0 30 14 * * *"` - Daily at 2:30 PM
+- `"0 0 */6 * * *"` - Every 6 hours
+- `"0 */2 * * * *"` - Every 2 minutes (testing only)
+
 ## Switching Between Databases
 
 Simply change the `DATABASE_TYPE` environment variable:
