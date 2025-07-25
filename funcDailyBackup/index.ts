@@ -1,5 +1,4 @@
 import { AzureFunction, Context } from '@azure/functions';
-import { FunctionHandler } from '../src/application/services/Main';
 import { BackupFactory } from '../src/factories/BackupFactory';
 import { LogModel } from '../src/domain/entities/LogModel';
 
@@ -42,4 +41,4 @@ const funcDailyBackup: AzureFunction = async function (
     };
   }
 };
-export = FunctionHandler(funcDailyBackup);
+export = funcDailyBackup;
