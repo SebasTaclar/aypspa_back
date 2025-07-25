@@ -6,9 +6,41 @@ const funcDailyBackup: AzureFunction = async function (context: Context): Promis
   const log = new Logger(context.log);
 
   try {
-    // Log current schedule configuration
+    // Generate timezone information for logging
+    const now = new Date();
+    const colombiaTime = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+    const chileTime = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+
+    const timezoneInfo = `🕐 Colombia: ${colombiaTime.toLocaleString('es-CO', {
+      timeZone: 'America/Bogota',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })} | Chile: ${chileTime.toLocaleString('es-CL', {
+      timeZone: 'America/Santiago',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    })} | Servidor: ${now.toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZoneName: 'short',
+    })}`;
+
+    // Log current schedule configuration and timezone info
     const currentSchedule = process.env.DAILY_BACKUP_SCHEDULE || 'NOT_CONFIGURED';
     log.logInfo(`Daily backup function started with schedule: ${currentSchedule}`);
+    log.logInfo(`Execution time - ${timezoneInfo}`);
 
     // Validate schedule is configured
     if (!process.env.DAILY_BACKUP_SCHEDULE) {

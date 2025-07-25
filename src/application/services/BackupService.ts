@@ -46,6 +46,90 @@ export class BackupService {
   ) {}
 
   /**
+   * Genera información de múltiples zonas horarias
+   */
+  private getMultiTimezoneInfo(): {
+    utc: string;
+    colombia: string;
+    chile: string;
+    server: string;
+    formatted: string;
+  } {
+    const now = new Date();
+
+    // UTC time
+    const utcTime = now.toISOString();
+
+    // Colombia time (UTC-5)
+    const colombiaTime = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+
+    // Chile time (UTC-3)
+    const chileTime = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+
+    // Server local time (depends on server timezone)
+    const serverTime = now;
+
+    return {
+      utc: utcTime,
+      colombia: colombiaTime.toLocaleString('es-CO', {
+        timeZone: 'America/Bogota',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }),
+      chile: chileTime.toLocaleString('es-CL', {
+        timeZone: 'America/Santiago',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      }),
+      server: serverTime.toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+        timeZoneName: 'short',
+      }),
+      formatted: `🕐 Hora Colombia: ${chileTime.toLocaleString('es-CO', {
+        timeZone: 'America/Bogota',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })} | 🕐 Hora Chile: ${chileTime.toLocaleString('es-CL', {
+        timeZone: 'America/Santiago',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      })} | 🕐 Hora Servidor: ${serverTime.toLocaleString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+        timeZoneName: 'short',
+      })}`,
+    };
+  }
+
+  /**
    * Genera un backup completo del sistema
    */
   async generateBackup(options: BackupOptions): Promise<BackupResult> {
@@ -156,7 +240,10 @@ export class BackupService {
     // Convert to JSON
     const backupJson = JSON.stringify(backupData, null, 2);
 
-    // Create filename with timestamp
+    // Get timezone information
+    const timezoneInfo = this.getMultiTimezoneInfo();
+
+    // Create filename with Chilean time for consistency
     const now = new Date();
     const chileanTime = new Date(now.getTime() - 3 * 60 * 60 * 1000); // UTC-3 for Chile
     const filename = `AYPSPA_${options.backupType === 'manual' ? 'ManualBackup' : 'Backup'}_${chileanTime.toISOString().split('T')[0]}_${chileanTime.getHours()}-${chileanTime.getMinutes()}.json`;
@@ -172,20 +259,21 @@ export class BackupService {
     }
 
     this.log.logInfo(`📧 Enviando backup ${options.backupType} por email...`);
+    this.log.logInfo(`${timezoneInfo.formatted}`);
 
     // Convert JSON to base64 for Azure Communication Services
     const backupJsonBase64 = Buffer.from(backupJson, 'utf8').toString('base64');
 
-    // Prepare email content based on backup type
+    // Prepare email content based on backup type with timezone information
     const subject =
       options.backupType === 'manual'
-        ? `AYPSPA - Backup Manual - ${chileanTime.toLocaleDateString('es-CL')}`
-        : `AYPSPA - Backup Diario - ${chileanTime.toLocaleDateString('es-CL')}`;
+        ? `AYPSPA - Backup Manual - ${timezoneInfo.chile.split(' ')[0]}`
+        : `AYPSPA - Backup Diario - ${timezoneInfo.chile.split(' ')[0]}`;
 
     const bodyText =
       options.backupType === 'manual'
-        ? `Backup manual del sistema AYPSPA generado el ${chileanTime.toLocaleString('es-CL')}\n\nEste backup fue solicitado manualmente y contiene toda la información actual del sistema.\n\nResumen:\n- ${backupData.summary.totalClients} clientes\n- ${backupData.summary.totalProducts} productos\n- ${backupData.summary.totalRents} arriendos (${backupData.summary.activeRents} activos)\n\nEl archivo adjunto contiene todos los datos en formato JSON para recuperación o análisis.`
-        : `Backup automático del sistema AYPSPA generado el ${chileanTime.toLocaleString('es-CL')}\n\nResumen:\n- ${backupData.summary.totalClients} clientes\n- ${backupData.summary.totalProducts} productos\n- ${backupData.summary.totalRents} arriendos (${backupData.summary.activeRents} activos)`;
+        ? `Backup manual del sistema AYPSPA\n\n${timezoneInfo.formatted}\n\nEste backup fue solicitado manualmente y contiene toda la información actual del sistema.\n\nResumen:\n- ${backupData.summary.totalClients} clientes\n- ${backupData.summary.totalProducts} productos\n- ${backupData.summary.totalRents} arriendos (${backupData.summary.activeRents} activos)\n\nEl archivo adjunto contiene todos los datos en formato JSON para recuperación o análisis.`
+        : `Backup automático del sistema AYPSPA\n\n${timezoneInfo.formatted}\n\nResumen:\n- ${backupData.summary.totalClients} clientes\n- ${backupData.summary.totalProducts} productos\n- ${backupData.summary.totalRents} arriendos (${backupData.summary.activeRents} activos)`;
 
     // Send email to each recipient individually
     for (const recipient of recipients) {
