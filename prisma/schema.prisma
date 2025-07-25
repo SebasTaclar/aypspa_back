@@ -68,7 +68,7 @@ model Rent {
   id               Int      @id @default(autoincrement())
   quantity         Int      @default(1)
   deliveryDate     String?  @map("delivery_date")
-  paymentMethod    String   @map("payment_method")
+  paymentMethod    String?  @map("payment_method") // Hacer opcional
   warrantyValue    Decimal  @default(0) @map("warranty_value") @db.Decimal(10, 2)
   isFinished       Boolean  @default(false) @map("is_finished")
   isPaid           Boolean  @default(false) @map("is_paid")

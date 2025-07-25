@@ -314,7 +314,7 @@ export class RentPrismaAdapter implements IRentDataSource {
         data: {
           quantity: rent.quantity,
           deliveryDate: rent.deliveryDate || '',
-          paymentMethod: rent.paymentMethod,
+          paymentMethod: rent.paymentMethod || '', // Hacer opcional al crear
           warrantyValue: rent.warrantyValue,
           isFinished: rent.isFinished || false,
           isPaid: rent.isPaid || false,
@@ -392,7 +392,8 @@ export class RentPrismaAdapter implements IRentDataSource {
     totalDays?: number,
     totalPrice?: number,
     observations?: string,
-    isPaid?: boolean
+    isPaid?: boolean,
+    paymentMethod?: string // Agregar paymentMethod como parámetro
   ): Promise<string | null> {
     try {
       const rentId = parseInt(id, 10);
@@ -400,11 +401,17 @@ export class RentPrismaAdapter implements IRentDataSource {
         return null;
       }
 
+      // Validar que paymentMethod esté presente al finalizar
+      if (!paymentMethod || paymentMethod.trim() === '') {
+        throw new Error('Payment method is required when finishing a rent');
+      }
+
       const updatedRent = await this.prisma.rent.update({
         where: { id: rentId },
         data: {
           isFinished: true,
           deliveryDate: deliveryDate,
+          paymentMethod: paymentMethod, // Actualizar el método de pago al finalizar
           ...(totalDays !== undefined && { totalDays }),
           ...(totalPrice !== undefined && { totalPrice }),
           ...(observations !== undefined && { observations }),
@@ -433,7 +440,7 @@ export class RentPrismaAdapter implements IRentDataSource {
       quantity: rent.quantity,
       totalValuePerDay: Number(rent.product.priceTotal), // Get from product instead of denormalized field
       deliveryDate: rent.deliveryDate || '',
-      paymentMethod: rent.paymentMethod,
+      paymentMethod: rent.paymentMethod || undefined, // Hacer opcional si está vacío
       warrantyValue: Number(rent.warrantyValue),
       isFinished: rent.isFinished,
       isPaid: rent.isPaid,

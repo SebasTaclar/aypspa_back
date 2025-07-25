@@ -73,6 +73,24 @@ const funcFinishRent: AzureFunction = async function (
       req.body && req.body.totalPrice ? parseFloat(req.body.totalPrice) : undefined;
     const observations = req.body && req.body.observations ? req.body.observations : undefined;
     const isPaid = req.body && req.body.isPaid !== undefined ? req.body.isPaid : undefined;
+    const paymentMethod = req.body && req.body.paymentMethod ? req.body.paymentMethod : undefined;
+
+    // Validate that paymentMethod is provided
+    if (!paymentMethod || paymentMethod.trim() === '') {
+      context.res = {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+        body: JSON.stringify({
+          success: false,
+          error: 'Bad Request',
+          message: 'Payment method is required when finishing a rent',
+        }),
+      };
+      return;
+    }
 
     log.logInfo(`Finishing rent with ID: ${rentId}`);
     const finishedRentId = await rentService.finishRent(
@@ -81,7 +99,8 @@ const funcFinishRent: AzureFunction = async function (
       totalDays,
       totalPrice,
       observations,
-      isPaid
+      isPaid,
+      paymentMethod
     );
 
     if (!finishedRentId) {

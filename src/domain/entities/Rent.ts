@@ -9,7 +9,7 @@ export type Rent = {
   // Core rent fields
   quantity: number;
   deliveryDate: string;
-  paymentMethod: string;
+  paymentMethod?: string; // Opcional al crear, requerido al finalizar
   warrantyValue: number;
   isFinished: boolean;
   isPaid: boolean;

@@ -45,11 +45,18 @@ const funcCreateRent: AzureFunction = async function (
       'quantity',
       'totalValuePerDay',
       'clientRut',
-      'paymentMethod',
       'clientName',
-      'warrantyValue',
     ];
     const missingFields = requiredFields.filter((field) => !req.body[field]);
+
+    // Special validation for warrantyValue - allow 0 but not undefined/null/empty
+    if (
+      req.body.warrantyValue === undefined ||
+      req.body.warrantyValue === null ||
+      req.body.warrantyValue === ''
+    ) {
+      missingFields.push('warrantyValue');
+    }
 
     if (missingFields.length > 0) {
       context.res = {
@@ -116,7 +123,7 @@ const funcCreateRent: AzureFunction = async function (
       quantity: parseInt(req.body.quantity),
       totalValuePerDay: parseFloat(req.body.totalValuePerDay),
       deliveryDate: req.body.deliveryDate || '',
-      paymentMethod: req.body.paymentMethod,
+      paymentMethod: req.body.paymentMethod || undefined, // Opcional al crear
       warrantyValue: parseFloat(req.body.warrantyValue),
       isFinished: req.body.isFinished || false,
       isPaid: req.body.isPaid || false,

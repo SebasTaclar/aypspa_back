@@ -73,6 +73,7 @@ export interface IRentDataSource {
    * @param totalPrice - Total price calculated for the rental
    * @param observations - Additional observations about the rental completion
    * @param isPaid - Whether the rent was paid
+   * @param paymentMethod - Payment method used (required when finishing)
    * @returns Promise containing the updated rent ID or null if not found
    */
   finishRent(
@@ -81,6 +82,7 @@ export interface IRentDataSource {
     totalDays?: number,
     totalPrice?: number,
     observations?: string,
-    isPaid?: boolean
+    isPaid?: boolean,
+    paymentMethod?: string
   ): Promise<string | null>;
 }

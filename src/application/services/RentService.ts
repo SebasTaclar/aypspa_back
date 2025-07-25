@@ -109,6 +109,7 @@ export class RentService {
    * @param totalPrice - Total price calculated for the rental
    * @param observations - Additional observations about the rental completion
    * @param isPaid - Whether the rent was paid
+   * @param paymentMethod - Payment method used (required when finishing)
    * @returns Promise containing the updated rent ID or null if not found
    */
   public async finishRent(
@@ -117,10 +118,15 @@ export class RentService {
     totalDays?: number,
     totalPrice?: number,
     observations?: string,
-    isPaid?: boolean
+    isPaid?: boolean,
+    paymentMethod?: string
   ): Promise<string | null> {
     if (!id || typeof id !== 'string') {
       throw new Error('Valid rent ID is required.');
+    }
+
+    if (!paymentMethod || paymentMethod.trim() === '') {
+      throw new Error('Payment method is required when finishing a rent.');
     }
 
     const finalDeliveryDate = deliveryDate || new Date().toISOString();
@@ -130,7 +136,8 @@ export class RentService {
       totalDays,
       totalPrice,
       observations,
-      isPaid
+      isPaid,
+      paymentMethod
     );
   }
 }
