@@ -60,48 +60,46 @@ export class BackupService {
     // UTC time
     const utcTime = now.toISOString();
 
-    // Colombia time (UTC-5)
-    const colombiaTime = new Date(now.getTime() - 5 * 60 * 60 * 1000);
+    // Calcular horas correctamente usando toLocaleString con timeZone
+    const colombiaTime = now.toLocaleString('es-CO', {
+      timeZone: 'America/Bogota', // UTC-5
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
 
-    // Chile time (UTC-3)
-    const chileTime = new Date(now.getTime() - 3 * 60 * 60 * 1000);
+    const chileTime = now.toLocaleString('es-CL', {
+      timeZone: 'America/Santiago', // UTC-3 (o UTC-4 en invierno)
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    });
 
-    // Server local time (depends on server timezone)
-    const serverTime = now;
+    const serverTime = now.toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZoneName: 'short',
+    });
 
     return {
       utc: utcTime,
-      colombia: colombiaTime.toLocaleString('es-CO', {
-        timeZone: 'America/Bogota',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }),
-      chile: chileTime.toLocaleString('es-CL', {
-        timeZone: 'America/Santiago',
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-      }),
-      server: serverTime.toLocaleString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false,
-        timeZoneName: 'short',
-      }),
-      formatted: `🕐 Hora Colombia: ${chileTime.toLocaleString('es-CO', {
+      colombia: colombiaTime,
+      chile: chileTime,
+      server: serverTime,
+      formatted: `🕐 Hora Colombia: ${now.toLocaleString('es-CO', {
         timeZone: 'America/Bogota',
         year: 'numeric',
         month: '2-digit',
@@ -109,7 +107,7 @@ export class BackupService {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false,
-      })} | 🕐 Hora Chile: ${chileTime.toLocaleString('es-CL', {
+      })} | 🕐 Hora Chile: ${now.toLocaleString('es-CL', {
         timeZone: 'America/Santiago',
         year: 'numeric',
         month: '2-digit',
@@ -117,7 +115,7 @@ export class BackupService {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false,
-      })} | 🕐 Hora Servidor: ${serverTime.toLocaleString('en-US', {
+      })} | 🕐 Hora Servidor: ${now.toLocaleString('en-US', {
         year: 'numeric',
         month: '2-digit',
         day: '2-digit',
