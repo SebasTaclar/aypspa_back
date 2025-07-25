@@ -9,6 +9,7 @@ export type RentDto = {
   paymentMethod?: string;
   clientName?: string;
   warrantyValue?: number;
+  warrantyType?: string;
   creationDate?: string;
   isFinished?: boolean;
 };
@@ -22,6 +23,7 @@ export type RentRequestDto = {
   paymentMethod: string;
   clientName: string;
   warrantyValue: number;
+  warrantyType?: string;
 };
 
 export type RentResponseDto = {
@@ -35,6 +37,7 @@ export type RentResponseDto = {
   paymentMethod: string;
   clientName: string;
   warrantyValue: number;
+  warrantyType?: string;
   creationDate: string;
   isFinished: boolean;
 };

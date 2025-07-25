@@ -70,6 +70,7 @@ model Rent {
   deliveryDate     String?  @map("delivery_date")
   paymentMethod    String?  @map("payment_method") // Hacer opcional
   warrantyValue    Decimal  @default(0) @map("warranty_value") @db.Decimal(10, 2)
+  warrantyType     String?  @default("Sin garantía") @map("warranty_type")
   isFinished       Boolean  @default(false) @map("is_finished")
   isPaid           Boolean  @default(false) @map("is_paid")
   totalDays        Decimal? @map("total_days") @db.Decimal(10, 2)

@@ -11,6 +11,7 @@ export type Rent = {
   deliveryDate: string;
   paymentMethod?: string; // Opcional al crear, requerido al finalizar
   warrantyValue: number;
+  warrantyType?: string; // Nuevo campo para tipo de garantía
   isFinished: boolean;
   isPaid: boolean;
   totalDays?: number;

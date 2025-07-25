@@ -15,85 +15,164 @@ import {
 export class RentPrismaAdapter implements IRentDataSource {
   private readonly prisma = getPrismaClient();
 
+  /**
+   * Construye filtros de búsqueda reutilizables
+   * @param queryObj - Objeto con los parámetros de búsqueda
+   * @returns Objeto con whereClause y logs de debug
+   */
+  private buildSearchFilters(queryObj: Record<string, unknown>): {
+    whereClause: Record<string, unknown>;
+    debugInfo: string[];
+  } {
+    const searchFilters: unknown[] = [];
+    const debugInfo: string[] = [];
+
+    // Product search filters - estas trabajan como criterios de búsqueda separados
+    if (typeof queryObj.code === 'string' && queryObj.code.trim() !== '') {
+      const codeWords = queryObj.code.trim().split(/\s+/);
+      debugInfo.push(`📝 Código - Palabras encontradas: ${JSON.stringify(codeWords)}`);
+
+      const codeWordFilters = codeWords.map((word) => ({
+        product: { code: { contains: word, mode: 'insensitive' } },
+      }));
+      const codeFilter =
+        codeWordFilters.length === 1 ? codeWordFilters[0] : { OR: codeWordFilters };
+      searchFilters.push(codeFilter);
+      debugInfo.push(`🔧 Filtro de código generado: ${JSON.stringify(codeFilter, null, 2)}`);
+    }
+
+    if (typeof queryObj.productName === 'string' && queryObj.productName.trim() !== '') {
+      const nameWords = queryObj.productName.trim().split(/\s+/);
+      debugInfo.push(`📝 Producto - Palabras encontradas: ${JSON.stringify(nameWords)}`);
+
+      // CAMBIO: Usar AND Logic - Busca nombres de productos que contengan TODAS las palabras
+      // Ejemplo: "mesa vidrio" solo encuentra productos que tengan AMBAS palabras en su nombre
+      // "MESA DE VIDRIO TEMPLADO" ✅ (contiene "mesa" Y "vidrio")
+      // "MESA DE MADERA" ❌ (contiene "mesa" pero NO "vidrio")
+      // "VIDRIO DECORATIVO" ❌ (contiene "vidrio" pero NO "mesa")
+
+      const productNameFilterAND = {
+        AND: nameWords.map((word) => ({
+          product: { name: { contains: word, mode: 'insensitive' } },
+        })),
+      };
+
+      searchFilters.push(productNameFilterAND);
+      debugInfo.push(
+        `🔧 Filtro de producto generado (AND): ${JSON.stringify(productNameFilterAND, null, 2)}`
+      );
+    }
+
+    // Client search filters - ANÁLISIS CRÍTICO AQUÍ
+    if (typeof queryObj.clientName === 'string' && queryObj.clientName.trim() !== '') {
+      const clientNameWords = queryObj.clientName.trim().split(/\s+/);
+      debugInfo.push(`👤 Cliente - Palabras encontradas: ${JSON.stringify(clientNameWords)}`);
+
+      // CAMBIO: Usar AND Logic - Busca nombres que contengan TODAS las palabras
+      // Ejemplo: "ruben va" solo encuentra clientes que tengan AMBAS palabras en su nombre
+      // "RUBEN JAVIER VARGAS ALVARADO" ✅ (contiene "ruben" Y "va")
+      // "RUBEN MARTINEZ" ❌ (contiene "ruben" pero NO "va")
+      // "CARLOS VARGAS" ❌ (contiene "va" pero NO "ruben")
+
+      const clientNameFilterAND = {
+        AND: clientNameWords.map((word) => ({
+          client: { name: { contains: word, mode: 'insensitive' } },
+        })),
+      };
+
+      searchFilters.push(clientNameFilterAND);
+      debugInfo.push(
+        `🔧 Filtro de cliente generado (AND): ${JSON.stringify(clientNameFilterAND, null, 2)}`
+      );
+    }
+
+    if (typeof queryObj.clientRut === 'string' && queryObj.clientRut.trim() !== '') {
+      const clientRutWords = queryObj.clientRut.trim().split(/\s+/);
+      debugInfo.push(`🆔 RUT - Palabras encontradas: ${JSON.stringify(clientRutWords)}`);
+
+      const clientRutWordFilters = clientRutWords.map((word) => ({
+        client: { rut: { contains: word } },
+      }));
+      const clientRutFilter =
+        clientRutWordFilters.length === 1 ? clientRutWordFilters[0] : { OR: clientRutWordFilters };
+      searchFilters.push(clientRutFilter);
+      debugInfo.push(`🔧 Filtro de RUT generado: ${JSON.stringify(clientRutFilter, null, 2)}`);
+    }
+
+    // Construct final filter logic
+    let finalSearchFilter: Record<string, unknown> = {};
+    console.log('🔎 Filtros de búsqueda generados:', JSON.stringify(searchFilters, null, 2));
+    if (searchFilters.length === 1) {
+      finalSearchFilter = searchFilters[0] as Record<string, unknown>;
+      debugInfo.push(`🎯 Filtro único aplicado: ${JSON.stringify(finalSearchFilter, null, 2)}`);
+    } else if (searchFilters.length > 1) {
+      // OR entre diferentes tipos de búsqueda (código, producto, cliente, RUT)
+      finalSearchFilter = { OR: searchFilters };
+      debugInfo.push(`🎯 Múltiples filtros con OR: ${JSON.stringify(finalSearchFilter, null, 2)}`);
+    }
+
+    return { whereClause: finalSearchFilter, debugInfo };
+  }
+
+  /**
+   * Construye filtros adicionales (fechas, estados, etc.)
+   */
+  private buildOtherFilters(queryObj: Record<string, unknown>): Record<string, unknown> {
+    const otherFilters: Record<string, unknown> = {};
+
+    if (typeof queryObj.isFinished === 'boolean') {
+      otherFilters.isFinished = queryObj.isFinished;
+    }
+    if (typeof queryObj.paymentMethod === 'string') {
+      otherFilters.paymentMethod = queryObj.paymentMethod;
+    }
+    if (typeof queryObj.startDate === 'string') {
+      otherFilters.createdAt = {
+        ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
+          ? otherFilters.createdAt
+          : {}),
+        gte: new Date(queryObj.startDate),
+      };
+    }
+    if (typeof queryObj.endDate === 'string') {
+      otherFilters.createdAt = {
+        ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
+          ? otherFilters.createdAt
+          : {}),
+        lte: new Date(queryObj.endDate),
+      };
+    }
+    if (typeof queryObj.isPaid === 'boolean') {
+      otherFilters.isPaid = queryObj.isPaid;
+    }
+
+    return otherFilters;
+  }
+
   public async getAll(query?: unknown): Promise<Rent[]> {
     let whereClause: Prisma.RentWhereInput = {};
+
+    console.log('🔍 getAll - Query recibida:', JSON.stringify(query, null, 2));
 
     // Handle query filtering - LINQ-like Where clause
     if (query && typeof query === 'object') {
       const queryObj = query as Record<string, unknown>;
 
-      // Build all filters separately
-      const allFilters: unknown[] = [];
+      // Usar la lógica extraída
+      const { whereClause: searchWhereClause, debugInfo } = this.buildSearchFilters(queryObj);
+      const otherFilters = this.buildOtherFilters(queryObj);
 
-      // Product filters (code OR name)
-      const productFilters: unknown[] = [];
-      if (typeof queryObj.code === 'string') {
-        productFilters.push({ code: { contains: queryObj.code, mode: 'insensitive' } });
-      }
-      if (typeof queryObj.productName === 'string') {
-        productFilters.push({ name: { contains: queryObj.productName, mode: 'insensitive' } });
-      }
+      // Log debug info
+      debugInfo.forEach((info) => console.log(info));
 
-      if (productFilters.length > 0) {
-        allFilters.push({
-          product: productFilters.length === 1 ? productFilters[0] : { OR: productFilters },
-        });
-      }
-
-      // Client filters
-      if (typeof queryObj.clientName === 'string') {
-        allFilters.push({
-          client: {
-            name: { contains: queryObj.clientName, mode: 'insensitive' },
-          },
-        });
-      }
-
-      if (typeof queryObj.clientRut === 'string') {
-        allFilters.push({
-          client: {
-            rut: { contains: queryObj.clientRut },
-          },
-        });
-      }
-
-      // Other filters (these use AND as they are different criteria)
-      const otherFilters: Record<string, unknown> = {};
-      if (typeof queryObj.isFinished === 'boolean') {
-        otherFilters.isFinished = queryObj.isFinished;
-      }
-      if (typeof queryObj.paymentMethod === 'string') {
-        otherFilters.paymentMethod = queryObj.paymentMethod;
-      }
-      if (typeof queryObj.startDate === 'string') {
-        otherFilters.createdAt = {
-          ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
-            ? otherFilters.createdAt
-            : {}),
-          gte: new Date(queryObj.startDate),
-        };
-      }
-      if (typeof queryObj.endDate === 'string') {
-        otherFilters.createdAt = {
-          ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
-            ? otherFilters.createdAt
-            : {}),
-          lte: new Date(queryObj.endDate),
-        };
-      }
-
-      // Build dynamic where clause
-      if (allFilters.length > 0) {
-        whereClause = {
-          ...otherFilters,
-          ...(allFilters.length === 1 && typeof allFilters[0] === 'object'
-            ? allFilters[0]
-            : { OR: allFilters }),
-        };
-      } else {
-        whereClause = otherFilters;
-      }
+      // Combinar filtros de búsqueda y otros filtros
+      whereClause = {
+        ...otherFilters,
+        ...searchWhereClause,
+      };
     }
+
+    console.log('🔍 WhereClause final enviado a Prisma:', JSON.stringify(whereClause, null, 2));
 
     const rents = await this.prisma.rent.findMany({
       where: whereClause,
@@ -104,61 +183,44 @@ export class RentPrismaAdapter implements IRentDataSource {
       orderBy: { createdAt: 'desc' }, // Similar to LINQ OrderByDescending
     });
 
+    console.log(`📊 Resultados encontrados: ${rents.length} arriendos`);
+    if (rents.length > 0) {
+      console.log('📋 Muestra de resultados:');
+      rents.slice(0, 3).forEach((rent, index) => {
+        console.log(
+          `  ${index + 1}. Cliente: "${rent.client.name}" | Producto: "${rent.product.name}"`
+        );
+      });
+    }
+
     return rents.map(this.mapToRentEntity);
   }
 
   public async getActiveRents(query?: unknown): Promise<Rent[]> {
     let whereClause: Prisma.RentWhereInput = { isFinished: false };
 
+    console.log('🔍 getActiveRents - Query recibida:', JSON.stringify(query, null, 2));
+
     // Handle additional query filtering for active rents
     if (query && typeof query === 'object') {
       const queryObj = query as Record<string, unknown>;
 
-      // Build all filters separately
-      const allFilters: unknown[] = [];
+      // Usar la lógica extraída
+      const { whereClause: searchWhereClause, debugInfo } = this.buildSearchFilters(queryObj);
+      const otherFilters = this.buildOtherFilters(queryObj);
 
-      // Product filters (code OR name)
-      const productFilters: unknown[] = [];
-      if (typeof queryObj.code === 'string' && queryObj.code.trim() !== '') {
-        productFilters.push({ code: { contains: queryObj.code, mode: 'insensitive' } });
-      }
-      if (typeof queryObj.productName === 'string' && queryObj.productName.trim() !== '') {
-        productFilters.push({ name: { contains: queryObj.productName, mode: 'insensitive' } });
-      }
+      // Log debug info
+      debugInfo.forEach((info) => console.log(info));
 
-      if (productFilters.length > 0) {
-        allFilters.push({
-          product: productFilters.length === 1 ? productFilters[0] : { OR: productFilters },
-        });
-      }
-
-      // Client filters
-      if (typeof queryObj.clientName === 'string' && queryObj.clientName.trim() !== '') {
-        allFilters.push({
-          client: {
-            name: { contains: queryObj.clientName, mode: 'insensitive' },
-          },
-        });
-      }
-
-      if (typeof queryObj.clientRut === 'string' && queryObj.clientRut.trim() !== '') {
-        allFilters.push({
-          client: {
-            rut: { contains: queryObj.clientRut },
-          },
-        });
-      }
-
-      // If we have multiple filter types, use OR between them
-      if (allFilters.length > 0) {
-        whereClause = {
-          ...whereClause,
-          ...(allFilters.length === 1 && typeof allFilters[0] === 'object'
-            ? allFilters[0]
-            : { OR: allFilters }),
-        };
-      }
+      // Combinar filtros de búsqueda y otros filtros, manteniendo isFinished: false
+      whereClause = {
+        isFinished: false, // Mantener este filtro base
+        ...otherFilters,
+        ...searchWhereClause,
+      };
     }
+
+    console.log('🔍 WhereClause final enviado a Prisma:', JSON.stringify(whereClause, null, 2));
 
     const rents = await this.prisma.rent.findMany({
       where: whereClause,
@@ -168,6 +230,16 @@ export class RentPrismaAdapter implements IRentDataSource {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    console.log(`📊 Resultados encontrados: ${rents.length} arriendos`);
+    if (rents.length > 0) {
+      console.log('📋 Muestra de resultados:');
+      rents.slice(0, 3).forEach((rent, index) => {
+        console.log(
+          `  ${index + 1}. Cliente: "${rent.client.name}" | Producto: "${rent.product.name}"`
+        );
+      });
+    }
 
     return rents.map(this.mapToRentEntity);
   }
@@ -182,75 +254,19 @@ export class RentPrismaAdapter implements IRentDataSource {
     if (query && typeof query === 'object') {
       const queryObj = query as Record<string, unknown>;
 
-      // Build all filters separately
-      const allFilters: unknown[] = [];
+      // Usar la lógica extraída
+      const { whereClause: searchWhereClause, debugInfo } = this.buildSearchFilters(queryObj);
+      const otherFilters = this.buildOtherFilters(queryObj);
 
-      // Product filters (code OR name)
-      const productFilters: unknown[] = [];
-      if (typeof queryObj.code === 'string') {
-        productFilters.push({ code: { contains: queryObj.code, mode: 'insensitive' } });
-      }
-      if (typeof queryObj.productName === 'string') {
-        productFilters.push({ name: { contains: queryObj.productName, mode: 'insensitive' } });
-      }
+      // Log debug info
+      debugInfo.forEach((info) => console.log(info));
 
-      if (productFilters.length > 0) {
-        allFilters.push({
-          product: productFilters.length === 1 ? productFilters[0] : { OR: productFilters },
-        });
-      }
-
-      // Client filters
-      if (typeof queryObj.clientName === 'string') {
-        allFilters.push({
-          client: {
-            name: { contains: queryObj.clientName, mode: 'insensitive' },
-          },
-        });
-      }
-
-      if (typeof queryObj.clientRut === 'string') {
-        allFilters.push({
-          client: {
-            rut: { contains: queryObj.clientRut },
-          },
-        });
-      }
-
-      // Other filters that should remain AND
-      const otherFilters: Record<string, unknown> = {};
-      if (typeof queryObj.startDate === 'string') {
-        otherFilters.createdAt = {
-          ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
-            ? otherFilters.createdAt
-            : {}),
-          gte: new Date(queryObj.startDate),
-        };
-      }
-      if (typeof queryObj.endDate === 'string') {
-        otherFilters.createdAt = {
-          ...(typeof otherFilters.createdAt === 'object' && otherFilters.createdAt !== null
-            ? otherFilters.createdAt
-            : {}),
-          lte: new Date(queryObj.endDate),
-        };
-      }
-      if (typeof queryObj.isPaid === 'boolean') {
-        otherFilters.isPaid = queryObj.isPaid;
-      }
-
-      // Build where clause
-      if (allFilters.length > 0) {
-        whereClause = {
-          ...whereClause,
-          ...otherFilters,
-          ...(allFilters.length === 1 && typeof allFilters[0] === 'object' && allFilters[0] !== null
-            ? allFilters[0]
-            : { OR: allFilters }),
-        };
-      } else {
-        whereClause = { ...whereClause, ...otherFilters };
-      }
+      // Combinar filtros de búsqueda y otros filtros, manteniendo isFinished: true
+      whereClause = {
+        isFinished: true, // Mantener este filtro base
+        ...otherFilters,
+        ...searchWhereClause,
+      };
     }
 
     // Default pagination values
@@ -316,6 +332,7 @@ export class RentPrismaAdapter implements IRentDataSource {
           deliveryDate: rent.deliveryDate || '',
           paymentMethod: rent.paymentMethod || '', // Hacer opcional al crear
           warrantyValue: rent.warrantyValue,
+          warrantyType: rent.warrantyType || 'Sin garantía',
           isFinished: rent.isFinished || false,
           isPaid: rent.isPaid || false,
           totalDays: rent.totalDays || null,
@@ -351,6 +368,7 @@ export class RentPrismaAdapter implements IRentDataSource {
           deliveryDate: data.deliveryDate,
           paymentMethod: data.paymentMethod,
           warrantyValue: data.warrantyValue,
+          warrantyType: data.warrantyType || 'Sin garantía',
           isFinished: data.isFinished,
           isPaid: data.isPaid,
           totalDays: data.totalDays || null,
@@ -442,6 +460,7 @@ export class RentPrismaAdapter implements IRentDataSource {
       deliveryDate: rent.deliveryDate || '',
       paymentMethod: rent.paymentMethod || undefined, // Hacer opcional si está vacío
       warrantyValue: Number(rent.warrantyValue),
+      warrantyType: rent.warrantyType || undefined,
       isFinished: rent.isFinished,
       isPaid: rent.isPaid,
       totalDays: rent.totalDays ? Number(rent.totalDays) : undefined,
