@@ -125,6 +125,7 @@ const funcCreateRent: AzureFunction = async function (
       deliveryDate: req.body.deliveryDate || '',
       paymentMethod: req.body.paymentMethod || undefined, // Opcional al crear
       warrantyValue: parseFloat(req.body.warrantyValue),
+      warrantyType: req.body.warrantyType || undefined, // Tipo de garantía (cheque, efectivo, etc.)
       isFinished: req.body.isFinished || false,
       isPaid: req.body.isPaid || false,
       totalDays:
