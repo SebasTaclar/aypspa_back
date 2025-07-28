@@ -102,22 +102,56 @@ const funcCreateRent: AzureFunction = async function (
       log.logInfo(`Found existing client with ID: ${client.id}`);
     }
 
-    // Find or create product by name
-    const products = await productService.getAllProducts({ name: req.body.productName });
+    // Find or create product by code first, then by name as fallback
+    let products: any[] = [];
     let product;
 
-    if (products.length === 0) {
-      // Product doesn't exist, create it
-      log.logInfo(`Product with name "${req.body.productName}" not found, creating new product`);
+    // First, try to find by code if provided
+    if (req.body.code) {
+      products = await productService.getAllProducts({ code: req.body.code });
+      if (products.length > 0) {
+        product = products[0];
+        log.logInfo(`Found existing product by code "${req.body.code}" with ID: ${product._id}`);
+      }
+    }
 
-      // Generate a unique code based on product name
-      const productCode =
-        req.body.code || req.body.productName.replace(/\s+/g, '').substring(0, 10).toUpperCase();
+    // If not found by code, try to find by name
+    if (!product && req.body.productName) {
+      products = await productService.getAllProducts({ name: req.body.productName });
+      if (products.length > 0) {
+        product = products[0];
+        log.logInfo(
+          `Found existing product by name "${req.body.productName}" with ID: ${product._id}`
+        );
+      }
+    }
+
+    // If still not found, create new product
+    if (!product) {
+      log.logInfo(
+        `Product not found by code "${req.body.code}" or name "${req.body.productName}", creating new product`
+      );
+
+      // Generate a unique code - use provided code or generate from name
+      let productCode = req.body.code;
+      if (!productCode && req.body.productName) {
+        productCode = req.body.productName.replace(/\s+/g, '').substring(0, 10).toUpperCase();
+      }
+
+      // Check if the code already exists to avoid duplicates
+      if (productCode) {
+        const existingByCode = await productService.getAllProducts({ code: productCode });
+        if (existingByCode.length > 0) {
+          // If code exists, append timestamp to make it unique
+          productCode = `${productCode}_${Date.now().toString().slice(-4)}`;
+          log.logInfo(`Code already exists, using unique code: ${productCode}`);
+        }
+      }
 
       const newProductData = {
         _id: null, // Will be auto-generated
-        name: req.body.productName,
-        code: productCode,
+        name: req.body.productName || productCode || 'Producto sin nombre',
+        code: productCode || `PROD_${Date.now()}`,
         brand: 'Sin marca', // Default brand
         priceNet: req.body.totalValuePerDay * 0.81, // Approximate net price (without IVA)
         priceIva: req.body.totalValuePerDay * 0.19, // 19% IVA
@@ -129,10 +163,9 @@ const funcCreateRent: AzureFunction = async function (
       };
 
       product = await productService.createProduct(newProductData);
-      log.logInfo(`Successfully created new product with ID: ${product._id}`);
-    } else {
-      product = products[0];
-      log.logInfo(`Found existing product with ID: ${product._id}`);
+      log.logInfo(
+        `Successfully created new product with ID: ${product._id} and code: ${product.code}`
+      );
     }
 
     // Create rent data without ID (let database auto-generate it)
@@ -170,6 +203,18 @@ const funcCreateRent: AzureFunction = async function (
       `Creating rent with code: ${rentData.code} for client: ${client.name} (ID: ${client.id}) and product: ${product.name} (ID: ${product._id})`
     );
     const createdRent = await rentService.createRent(rentToCreate);
+
+    // Mark product as rented after successful rent creation
+    if (product._id) {
+      const updatedProductData = {
+        ...product,
+        rented: true,
+        updatedAt: new Date().toISOString(),
+      };
+
+      await productService.updateProduct(product._id, updatedProductData);
+      log.logInfo(`Successfully marked product ${product.code} (ID: ${product._id}) as rented`);
+    }
 
     log.logInfo(`Successfully created rent with ID: ${createdRent.id}`);
 
