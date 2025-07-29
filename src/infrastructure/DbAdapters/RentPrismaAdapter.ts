@@ -303,107 +303,86 @@ export class RentPrismaAdapter implements IRentDataSource {
   }
 
   public async getById(id: string): Promise<Rent | null> {
-    try {
-      const rentId = parseInt(id, 10);
-      if (isNaN(rentId)) {
-        return null;
-      }
-
-      const rent = await this.prisma.rent.findUnique({
-        where: { id: rentId },
-        include: {
-          client: true,
-          product: true,
-        },
-      });
-
-      return rent ? this.mapToRentEntity(rent) : null;
-    } catch (error) {
-      console.error('Error getting rent by ID:', error);
+    const rentId = parseInt(id, 10);
+    if (isNaN(rentId)) {
       return null;
     }
+
+    const rent = await this.prisma.rent.findUnique({
+      where: { id: rentId },
+      include: {
+        client: true,
+        product: true,
+      },
+    });
+
+    return rent ? this.mapToRentEntity(rent) : null;
   }
 
   public async create(rent: Rent): Promise<Rent> {
-    try {
-      const createdRent = await this.prisma.rent.create({
-        data: {
-          quantity: rent.quantity,
-          deliveryDate: rent.deliveryDate || '',
-          paymentMethod: rent.paymentMethod || '', // Hacer opcional al crear
-          warrantyValue: rent.warrantyValue,
-          warrantyType: rent.warrantyType || 'Sin garantía',
-          isFinished: rent.isFinished || false,
-          isPaid: rent.isPaid || false,
-          totalDays: rent.totalDays || null,
-          totalPrice: rent.totalPrice || null,
-          observations: rent.observations || null,
-          clientId: rent.clientId,
-          productId: rent.productId,
-        },
-        include: {
-          client: true,
-          product: true,
-        },
-      });
+    const createdRent = await this.prisma.rent.create({
+      data: {
+        quantity: rent.quantity,
+        deliveryDate: rent.deliveryDate || '',
+        paymentMethod: rent.paymentMethod || '', // Hacer opcional al crear
+        warrantyValue: rent.warrantyValue,
+        warrantyType: rent.warrantyType || 'Sin garantía',
+        isFinished: rent.isFinished || false,
+        isPaid: rent.isPaid || false,
+        totalDays: rent.totalDays || null,
+        totalPrice: rent.totalPrice || null,
+        observations: rent.observations || null,
+        clientId: rent.clientId,
+        productId: rent.productId,
+      },
+      include: {
+        client: true,
+        product: true,
+      },
+    });
 
-      return this.mapToRentEntity(createdRent);
-    } catch (error: unknown) {
-      console.error('Error creating rent:', error);
-      throw new Error('Failed to create rent');
-    }
+    return this.mapToRentEntity(createdRent);
   }
 
   public async update(id: string, data: Rent): Promise<string | null> {
-    try {
-      const rentId = parseInt(id, 10);
-      if (isNaN(rentId)) {
-        return null;
-      }
-
-      const updatedRent = await this.prisma.rent.update({
-        where: { id: rentId },
-        data: {
-          quantity: data.quantity,
-          deliveryDate: data.deliveryDate,
-          paymentMethod: data.paymentMethod,
-          warrantyValue: data.warrantyValue,
-          warrantyType: data.warrantyType || 'Sin garantía',
-          isFinished: data.isFinished,
-          isPaid: data.isPaid,
-          totalDays: data.totalDays || null,
-          totalPrice: data.totalPrice || null,
-          observations: data.observations || null,
-          clientId: data.clientId,
-          productId: data.productId,
-        },
-      });
-
-      return updatedRent.id.toString();
-    } catch (error) {
-      console.error('Error updating rent:', error);
+    const rentId = parseInt(id, 10);
+    if (isNaN(rentId)) {
       return null;
     }
+
+    const updatedRent = await this.prisma.rent.update({
+      where: { id: rentId },
+      data: {
+        quantity: data.quantity,
+        deliveryDate: data.deliveryDate,
+        paymentMethod: data.paymentMethod,
+        warrantyValue: data.warrantyValue,
+        warrantyType: data.warrantyType || 'Sin garantía',
+        isFinished: data.isFinished,
+        isPaid: data.isPaid,
+        totalDays: data.totalDays || null,
+        totalPrice: data.totalPrice || null,
+        observations: data.observations || null,
+        clientId: data.clientId,
+        productId: data.productId,
+      },
+    });
+
+    return updatedRent.id.toString();
   }
 
   public async delete(id: string): Promise<{ deletedCount: number }> {
-    try {
-      const rentId = parseInt(id, 10);
-      if (isNaN(rentId)) {
-        return { deletedCount: 0 };
-      }
-
-      await this.prisma.rent.delete({
-        where: { id: rentId },
-      });
-
-      return { deletedCount: 1 };
-    } catch (error) {
-      console.error('Error deleting rent:', error);
+    const rentId = parseInt(id, 10);
+    if (isNaN(rentId)) {
       return { deletedCount: 0 };
     }
-  }
 
+    await this.prisma.rent.delete({
+      where: { id: rentId },
+    });
+
+    return { deletedCount: 1 };
+  }
   public async finishRent(
     id: string,
     deliveryDate: string,

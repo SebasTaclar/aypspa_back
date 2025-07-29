@@ -109,59 +109,44 @@ export class ClientPrismaAdapter implements IClientDataSource {
   }
 
   public async update(id: string, client: Client): Promise<string | null> {
-    try {
-      // Validate and parse the ID
-      const clientId = parseInt(id, 10);
-      if (isNaN(clientId)) {
-        console.error(`Invalid client ID: ${id}`);
-        return null;
-      }
-
-      const updatedClient = await this.prisma.client.update({
-        where: { id: clientId },
-        data: {
-          name: client.name,
-          companyName: client.companyName || null,
-          companyDocument: client.companyDocument || null,
-          rut: client.rut || null,
-          phoneNumber: client.phoneNumber || null,
-          address: client.address || null,
-          creationDate:
-            client.creationDate && client.creationDate.trim() !== ''
-              ? client.creationDate
-              : new Date().toISOString(),
-          frequentClient: client.frequentClient || null,
-          created:
-            client.created && client.created.trim() !== ''
-              ? client.created
-              : new Date().toISOString(),
-          photoFileName: client.photoFileName || null,
-        },
-        select: { id: true },
-      });
-
-      return updatedClient.id.toString();
-    } catch (error) {
-      console.error('Error updating client:', error);
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-        return null; // Record not found
-      }
-      throw error;
+    // Validate and parse the ID
+    const clientId = parseInt(id, 10);
+    if (isNaN(clientId)) {
+      console.error(`Invalid client ID: ${id}`);
+      return null;
     }
+
+    const updatedClient = await this.prisma.client.update({
+      where: { id: clientId },
+      data: {
+        name: client.name,
+        companyName: client.companyName || null,
+        companyDocument: client.companyDocument || null,
+        rut: client.rut || null,
+        phoneNumber: client.phoneNumber || null,
+        address: client.address || null,
+        creationDate:
+          client.creationDate && client.creationDate.trim() !== ''
+            ? client.creationDate
+            : new Date().toISOString(),
+        frequentClient: client.frequentClient || null,
+        created:
+          client.created && client.created.trim() !== ''
+            ? client.created
+            : new Date().toISOString(),
+        photoFileName: client.photoFileName || null,
+      },
+      select: { id: true },
+    });
+
+    return updatedClient.id.toString();
   }
 
   public async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.client.delete({
-        where: { id: parseInt(id) },
-      });
-      return true;
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-        return false; // Record not found
-      }
-      throw error;
-    }
+    await this.prisma.client.delete({
+      where: { id: parseInt(id) },
+    });
+    return true;
   }
 
   // Additional LINQ-like methods

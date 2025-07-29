@@ -107,43 +107,29 @@ export class ProductPrismaAdapter implements IProductDataSource {
   }
 
   public async update(id: string, product: Product): Promise<string | null> {
-    try {
-      const updatedProduct = await this.prisma.product.update({
-        where: { id: parseInt(id) },
-        data: {
-          name: product.name,
-          code: product.code,
-          brand: product.brand || null,
-          priceNet: new Prisma.Decimal(product.priceNet),
-          priceIva: new Prisma.Decimal(product.priceIva),
-          priceTotal: new Prisma.Decimal(product.priceTotal),
-          priceWarranty: new Prisma.Decimal(product.priceWarranty),
-          rented: product.rented,
-        },
-        select: { id: true },
-      });
+    const updatedProduct = await this.prisma.product.update({
+      where: { id: parseInt(id) },
+      data: {
+        name: product.name,
+        code: product.code,
+        brand: product.brand || null,
+        priceNet: new Prisma.Decimal(product.priceNet),
+        priceIva: new Prisma.Decimal(product.priceIva),
+        priceTotal: new Prisma.Decimal(product.priceTotal),
+        priceWarranty: new Prisma.Decimal(product.priceWarranty),
+        rented: product.rented,
+      },
+      select: { id: true },
+    });
 
-      return updatedProduct.id.toString();
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-        return null; // Record not found
-      }
-      throw error;
-    }
+    return updatedProduct.id.toString();
   }
 
   public async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.product.delete({
-        where: { id: parseInt(id) },
-      });
-      return true;
-    } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-        return false; // Record not found
-      }
-      throw error;
-    }
+    await this.prisma.product.delete({
+      where: { id: parseInt(id) },
+    });
+    return true;
   }
 
   // Additional LINQ-like methods
