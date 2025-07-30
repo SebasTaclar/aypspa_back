@@ -286,7 +286,7 @@ export class RentPrismaAdapter implements IRentDataSource {
         client: true,
         product: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { deliveryDate: 'desc' },
       skip: skip,
       take: pageSize,
     });
