@@ -131,7 +131,7 @@ export function ErrorHandlerMiddleware(
       }
 
       // Determine response based on error type
-      const errorResponse = determineErrorResponse(enhancedError, errorContext);
+      const errorResponse = determineErrorResponse(enhancedError);
 
       context.res = {
         status: errorResponse.statusCode,
@@ -163,10 +163,7 @@ export function ErrorHandlerMiddleware(
 /**
  * Helper function to determine appropriate error response based on error type
  */
-function determineErrorResponse(
-  error: EnhancedError,
-  context: ErrorContext
-): {
+function determineErrorResponse(error: EnhancedError): {
   statusCode: number;
   errorType: string;
   message: string;
