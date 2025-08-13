@@ -18,7 +18,8 @@ export function generateToken(user: {
     membershipPaid: user.membershipPaid,
   };
 
-  const token = sign(payload, SECRET_KEY, { expiresIn: '1h' });
+  const expiresIn = parseInt(process.env.JWT_EXPIRATION || '3600'); // Convert to number
+  const token = sign(payload, SECRET_KEY, { expiresIn });
   return token;
 }
 
