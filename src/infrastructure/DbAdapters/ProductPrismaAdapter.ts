@@ -107,18 +107,31 @@ export class ProductPrismaAdapter implements IProductDataSource {
   }
 
   public async update(id: string, product: Product): Promise<string | null> {
+    // Build update data object only with defined fields
+    const updateData: any = {};
+
+    if (product.name !== undefined) updateData.name = product.name;
+    if (product.code !== undefined) updateData.code = product.code;
+    if (product.brand !== undefined) updateData.brand = product.brand || null;
+    if (product.rented !== undefined) updateData.rented = product.rented;
+
+    // Handle Decimal fields with validation
+    if (product.priceNet !== undefined && product.priceNet !== null) {
+      updateData.priceNet = new Prisma.Decimal(product.priceNet);
+    }
+    if (product.priceIva !== undefined && product.priceIva !== null) {
+      updateData.priceIva = new Prisma.Decimal(product.priceIva);
+    }
+    if (product.priceTotal !== undefined && product.priceTotal !== null) {
+      updateData.priceTotal = new Prisma.Decimal(product.priceTotal);
+    }
+    if (product.priceWarranty !== undefined && product.priceWarranty !== null) {
+      updateData.priceWarranty = new Prisma.Decimal(product.priceWarranty);
+    }
+
     const updatedProduct = await this.prisma.product.update({
       where: { id: parseInt(id) },
-      data: {
-        name: product.name,
-        code: product.code,
-        brand: product.brand || null,
-        priceNet: new Prisma.Decimal(product.priceNet),
-        priceIva: new Prisma.Decimal(product.priceIva),
-        priceTotal: new Prisma.Decimal(product.priceTotal),
-        priceWarranty: new Prisma.Decimal(product.priceWarranty),
-        rented: product.rented,
-      },
+      data: updateData,
       select: { id: true },
     });
 
